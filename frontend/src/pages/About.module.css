@@ -1,0 +1,127 @@
+.container {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+  padding: 2rem;
+  margin-top: 80px;
+}
+
+.messageContainer {
+  max-width: 600px;
+  width: 100%;
+}
+
+.title {
+  font-size: 3rem;
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem;
+  letter-spacing: 1px;
+}
+
+.comingSoon {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, rgba(255, 0, 0, 0.1), rgba(255, 204, 0, 0.1));
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(255, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.icon {
+  font-size: 4rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.comingSoon h2 {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  font-family: var(--font-accent);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.comingSoon p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 400px;
+}
+
+.button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: var(--primary-color);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 1rem;
+}
+
+.button:hover {
+  background: var(--secondary-color);
+  color: var(--bg-primary);
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .comingSoon {
+    padding: 2rem 1.5rem;
+  }
+
+  .comingSoon h2 {
+    font-size: 1.8rem;
+  }
+
+  .comingSoon p {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .comingSoon {
+    padding: 1.5rem 1rem;
+  }
+
+  .icon {
+    font-size: 3rem;
+  }
+
+  .comingSoon h2 {
+    font-size: 1.4rem;
+  }
+}

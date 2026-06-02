@@ -7,8 +7,8 @@ export default function Header() {
   const navLinks = [
     { label: 'Inicio', path: '/' },
     { label: 'Catalogo', path: '/catalogo' },
-    { label: 'Nosotros', path: '#nosotros' },
-    { label: 'Contacto', path: '#contacto' }
+    { label: 'Nosotros', path: '/nosotros' },
+    { label: 'Contacto', path: '/contacto' }
   ]
 
   const isActive = (path) => {
