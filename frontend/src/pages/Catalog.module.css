@@ -1,0 +1,246 @@
+.catalogContainer {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  padding-bottom: 4rem;
+}
+
+.header {
+  background: linear-gradient(135deg, rgba(255, 0, 0, 0.15), rgba(255, 204, 0, 0.1));
+  padding: 4rem 2rem;
+  margin-top: 80px;
+  margin-bottom: 3rem;
+  border-bottom: 2px solid rgba(255, 0, 0, 0.2);
+}
+
+.headerContent {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.headerContent h1 {
+  font-size: 3rem;
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.headerContent p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-family: var(--font-primary);
+  font-weight: 400;
+}
+
+.topBar {
+  max-width: 1400px;
+  margin: 0 auto 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding: 0 2rem;
+  flex-wrap: wrap;
+}
+
+.searchContainer {
+  flex: 1;
+  min-width: 250px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.9rem 1.2rem 0.9rem 2.8rem;
+  background: var(--bg-secondary);
+  border: 2px solid rgba(255, 0, 0, 0.2);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background: rgba(255, 0, 0, 0.05);
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  font-size: 1.1rem;
+  color: var(--secondary-color);
+  pointer-events: none;
+}
+
+.sortContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sortContainer label {
+  color: var(--text-secondary);
+  font-family: var(--font-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.sortSelect {
+  padding: 0.8rem 1rem;
+  background: var(--bg-secondary);
+  border: 2px solid rgba(255, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.sortSelect:hover {
+  border-color: var(--primary-color);
+}
+
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 0, 0, 0.1);
+}
+
+.mainContent {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  padding: 0 2rem;
+}
+
+.productsSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.resultsInfo {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.productCardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.noResults {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(255, 0, 0, 0.05);
+  border-radius: var(--radius-lg);
+  border: 2px dashed rgba(255, 0, 0, 0.2);
+}
+
+.noResults h3 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  margin-bottom: 0.8rem;
+}
+
+.noResults p {
+  color: var(--text-secondary);
+  font-family: var(--font-primary);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .header {
+    padding: 3rem 1.5rem;
+  }
+
+  .headerContent h1 {
+    font-size: 2rem;
+  }
+
+  .topBar {
+    padding: 0 1.5rem;
+    gap: 1rem;
+  }
+
+  .mainContent {
+    padding: 0 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .productsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .headerContent h1 {
+    font-size: 1.8rem;
+  }
+
+  .headerContent p {
+    font-size: 0.95rem;
+  }
+
+  .topBar {
+    flex-direction: column;
+    padding: 0 1rem;
+    align-items: stretch;
+  }
+
+  .sortContainer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mainContent {
+    grid-template-columns: 1fr;
+    padding: 0 1rem;
+  }
+
+  .productsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerContent h1 {
+    font-size: 1.4rem;
+  }
+
+  .headerContent p {
+    font-size: 0.85rem;
+  }
+
+  .productsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+}

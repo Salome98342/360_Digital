@@ -1,0 +1,160 @@
+.home {
+  background-color: #000;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.hero {
+  background-color: #000;
+  padding: 4rem 2rem;
+  min-height: calc(100vh - 120px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 80px;
+}
+
+.heroContainer {
+  max-width: 1400px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+/* Hero Content */
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeInLeft 0.8s ease-out;
+}
+
+.tagline {
+  font-size: 2.95rem;
+  color: #ff0000;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin: 0;
+  text-transform: uppercase;
+  font-family: 'Anton', sans-serif;
+}
+
+.mainTitle {
+  font-size: 5.0rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.2;
+  font-family: 'League Spartan', sans-serif;
+}
+
+.highlight {
+  color: #ffcc00;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 700;
+}
+
+.description {
+  font-size: 1.30rem;
+  color: #cccccc;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 500px;
+  font-family: 'League Spartan', sans-serif;
+  font-weight: 400;
+}
+
+/* Carousel Section */
+.carouselSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInRight 0.8s ease-out;
+}
+
+/* Animations */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .heroContainer {
+    gap: 2rem;
+  }
+
+  .mainTitle {
+    font-size: 2.5rem;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem;
+    min-height: auto;
+  }
+
+  .heroContainer {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .mainTitle {
+    font-size: 2rem;
+  }
+
+  .tagline {
+    font-size: 0.85rem;
+  }
+
+  .description {
+    font-size: 0.95rem;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 1.5rem 1rem;
+  }
+
+  .heroContainer {
+    gap: 1.5rem;
+  }
+
+  .mainTitle {
+    font-size: 1.5rem;
+  }
+
+  .tagline {
+    font-size: 0.8rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+  }
+}
