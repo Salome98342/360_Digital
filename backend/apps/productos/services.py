@@ -66,7 +66,7 @@ Por favor, responde a este cliente lo antes posible.
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }}
         .header {{
-            background: linear-gradient(135deg, #ff0000 0%, #ffb300 100%);
+            background: linear-gradient(135deg, #cd1d1d 0%, #390202 100%);
             color: white;
             padding: 30px 20px;
             text-align: center;
@@ -113,7 +113,7 @@ Por favor, responde a este cliente lo antes posible.
             word-break: break-word;
         }}
         .message-box {{
-            background-color: ##ffffff;
+            background-color: #f5f5f5;
             border-left: 4px solid #667eea;
             padding: 15px;
             border-radius: 4px;
@@ -268,7 +268,7 @@ Marketing y Desarrollo Digital
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }}
         .header {{
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #cd1d1d 0%, #390202 100%);
             color: white;
             padding: 30px 20px;
             text-align: center;
