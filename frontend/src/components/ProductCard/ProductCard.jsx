@@ -1,8 +1,8 @@
 import styles from './ProductCard.module.css';
 
-export default function ProductCard({ product, onSelect }) {
+export default function ProductCard({ product }) {
   return (
-    <div className={styles.productCard} onClick={() => onSelect(product.id)}>
+    <div className={styles.productCard}>
       <div className={styles.imageContainer}>
         {/* Aquí irá la imagen del producto */}
         <img src={product.image} alt={product.title} className={styles.productImage} />

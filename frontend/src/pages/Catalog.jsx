@@ -20,7 +20,7 @@ export default function Catalog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
     categories: [],
-    price: 5000,
+    price: 250000,
     rating: []
   });
   const [sortBy, setSortBy] = useState('relevance');
@@ -111,7 +111,7 @@ export default function Catalog() {
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === 'clear') {
-      setActiveFilters({ categories: [], price: 5000, rating: [] });
+      setActiveFilters({ categories: [], price: 250000, rating: [] });
     } else if (filterType === 'categories') {
       setActiveFilters(prev => ({
         ...prev,

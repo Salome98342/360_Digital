@@ -76,12 +76,12 @@ export default function FilterSidebar({ onFilterChange, activeFilters }) {
             <input 
               type="range" 
               min="0" 
-              max="5000"
+              max="250000"
               className={styles.slider}
               onChange={(e) => onFilterChange('price', e.target.value)}
             />
             <div className={styles.priceLabel}>
-              Hasta: <strong>${activeFilters.price || 5000}</strong>
+              Hasta: <strong>${activeFilters.price || 250000}</strong>
             </div>
           </div>
         )}

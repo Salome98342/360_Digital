@@ -170,16 +170,15 @@
 
 .specLabel {
   color: var(--primary-color);
-  font-size: 0.85rem;
+  font-size: 1.50rem;
   text-transform: uppercase;
-  font-weight: 700;
   font-family: var(--font-accent);
 }
 
 .specValue {
   color: var(--text-primary);
   font-family: var(--font-primary);
-  font-size: 1rem;
+  font-size: 1.3rem;
 }
 
 /* Actions */
@@ -548,7 +547,7 @@
 }
 
 .reviewHeader h4 {
-  color: var(--text-primary);
+  color: var(--bg-primary);
   font-family: var(--font-primary);
   font-weight: 700;
   font-size: 1.1rem;
@@ -556,7 +555,7 @@
 }
 
 .reviewStars {
-  color: var(--secondary-color);
+  color: var(--bg-primary);
   font-size: 1.2rem;
   white-space: nowrap;
 }
@@ -569,7 +568,7 @@
 }
 
 .reviewComment {
-  color: var(--text-primary);
+  color: var(--bg-primary);
   font-family: var(--font-primary);
   line-height: 1.6;
   margin: 0.8rem 0 0;
