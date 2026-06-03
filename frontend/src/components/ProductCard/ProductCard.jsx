@@ -1,5 +1,14 @@
 import styles from './ProductCard.module.css';
 
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price);
+};
+
 export default function ProductCard({ product }) {
   return (
     <div className={styles.productCard}>
@@ -25,9 +34,9 @@ export default function ProductCard({ product }) {
         </div>
         
         <div className={styles.priceContainer}>
-          <span className={styles.price}>${product.price}</span>
+          <span className={styles.price}>{formatPrice(product.price)}</span>
           {product.originalPrice && (
-            <span className={styles.originalPrice}>${product.originalPrice}</span>
+            <span className={styles.originalPrice}>{formatPrice(product.originalPrice)}</span>
           )}
         </div>
       </div>

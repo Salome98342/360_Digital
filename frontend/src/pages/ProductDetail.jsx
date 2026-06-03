@@ -3,6 +3,15 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header/Header.jsx';
 import styles from './ProductDetail.module.css';
 
+const formatPrice = (price) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price);
+};
+
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -193,7 +202,7 @@ export default function ProductDetail() {
           </div>
 
           {/* Price */}
-          <div className={styles.price}>${product.precio}</div>
+          <div className={styles.price}>{formatPrice(product.precio)}</div>
 
           {/* Description */}
           <p className={styles.description}>{product.descripcion}</p>

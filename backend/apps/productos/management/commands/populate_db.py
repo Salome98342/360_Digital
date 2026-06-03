@@ -13,6 +13,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Iniciando población de datos...'))
+        
+        # Limpiar todos los productos
+        Producto.objects.all().delete()
+        self.stdout.write(self.style.SUCCESS('✓ Base de datos limpiada - todos los productos eliminados'))
 
         # Crear administrador
         try:
