@@ -6,7 +6,10 @@ export default function Contact() {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
-    mensaje: ''
+    telefono: '',
+    mensaje: '',
+    contactar_por_whatsapp: false,
+    contactar_por_correo: true
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -14,10 +17,10 @@ export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -35,14 +38,16 @@ export default function Contact() {
         body: JSON.stringify({
           nombre_completo: formData.nombre,
           correo: formData.email,
+          telefono: formData.telefono,
           mensaje: formData.mensaje,
-          telefono: ''
+          contactar_por_whatsapp: formData.contactar_por_whatsapp,
+          contactar_por_correo: formData.contactar_por_correo
         })
       });
 
       if (response.ok) {
         setSubmitted(true);
-        setFormData({ nombre: '', email: '', mensaje: '' });
+        setFormData({ nombre: '', email: '', telefono: '', mensaje: '', contactar_por_whatsapp: false, contactar_por_correo: true });
         setTimeout(() => {
           setSubmitted(false);
         }, 5000);
@@ -157,6 +162,19 @@ export default function Contact() {
               </div>
 
               <div className={styles.formGroup}>
+                <label htmlFor="telefono">Teléfono</label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  placeholder="+57 123 456 7890"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
                 <label htmlFor="mensaje">Mensaje</label>
                 <textarea
                   id="mensaje"
@@ -168,6 +186,32 @@ export default function Contact() {
                   rows="5"
                   disabled={isSubmitting}
                 />
+              </div>
+
+              <div className={styles.checkboxGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    name="contactar_por_whatsapp"
+                    checked={formData.contactar_por_whatsapp}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                  />
+                  <span>Prefiero que me contacten por WhatsApp</span>
+                </label>
+              </div>
+
+              <div className={styles.checkboxGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    name="contactar_por_correo"
+                    checked={formData.contactar_por_correo}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                  />
+                  <span>Prefiero que me contacten por correo electrónico</span>
+                </label>
               </div>
 
               <button type="submit" className={styles.submitButton} disabled={isSubmitting}>

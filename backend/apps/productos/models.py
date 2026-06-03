@@ -119,9 +119,9 @@ class FormularioContacto(models.Model):
     nombre_completo = models.CharField(max_length=150)
     correo = models.EmailField()
     telefono = models.CharField(max_length=20, blank=True, null=True)
-    
     mensaje = models.TextField()
-    
+    contactar_por_whatsapp = models.BooleanField(default=False)
+    contactar_por_correo = models.BooleanField(default=True)
     fecha_envio = models.DateTimeField(auto_now_add=True)
 
     class Meta:

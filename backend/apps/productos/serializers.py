@@ -79,4 +79,4 @@ class ProductoDetailSerializer(serializers.ModelSerializer):
 class FormularioContactoSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormularioContacto
-        fields = ['nombre_completo', 'correo', 'telefono', 'mensaje']
+        fields = ['nombre_completo', 'correo', 'telefono', 'mensaje', 'contactar_por_whatsapp', 'contactar_por_correo']
