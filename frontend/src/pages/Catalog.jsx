@@ -35,6 +35,9 @@ export default function Catalog() {
         const response = await fetch('http://localhost:8000/api/productos/');
         const data = await response.json();
         
+        console.log('API Response:', data);
+        console.log('Results array:', data.results);
+        
         // Mapear datos de la API al formato esperado por el componente
         const mappedProducts = data.results.map(product => ({
           id: product.id,
@@ -46,6 +49,7 @@ export default function Catalog() {
           description: product.descripcion
         }));
         
+        console.log('Mapped products:', mappedProducts);
         setAllProducts(mappedProducts);
       } catch (error) {
         console.error('Error al cargar productos:', error);
@@ -103,7 +107,7 @@ export default function Catalog() {
     }
 
     return results;
-  }, [searchTerm, activeFilters, sortBy]);
+  }, [searchTerm, activeFilters, sortBy, allProducts]);
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === 'clear') {

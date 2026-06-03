@@ -562,7 +562,7 @@
 }
 
 .reviewDate {
-  color: var(--text-secondary);
+  color: var(--bg-primary);
   font-family: var(--font-primary);
   font-size: 0.85rem;
   margin: 0.3rem 0;
