@@ -15,7 +15,7 @@ from .serializers import (
     ProductoListSerializer, ProductoDetailSerializer, GaleriaProductoSerializer,
     ResenaSerializer, FormularioContactoSerializer
 )
-from .services import enviar_email_contacto
+from .services import enviar_email_contacto, enviar_confirmacion_contacto
 
 
 class ServicioViewSet(viewsets.ReadOnlyModelViewSet):
@@ -74,13 +74,16 @@ class FormularioContactoViewSet(viewsets.ModelViewSet):
     pagination_class = None
     
     def create(self, request, *args, **kwargs):
-        """Crear nuevo mensaje de contacto y enviar email"""
+        """Crear nuevo mensaje de contacto y enviar emails"""
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             contacto = serializer.save()
             
-            # Enviar email usando el servicio
+            # Enviar email al equipo
             enviar_email_contacto(contacto)
+            
+            # Enviar email de confirmación al cliente
+            enviar_confirmacion_contacto(contacto)
             
             return Response(
                 {'detail': 'Mensaje recibido correctamente'},
