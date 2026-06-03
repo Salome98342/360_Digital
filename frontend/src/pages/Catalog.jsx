@@ -1,9 +1,20 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header/Header.jsx';
 import styles from './Catalog.module.css';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import ProductCard from '../components/ProductCard/ProductCard';
+
+const imageMap = {
+  1: 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=400&h=300&fit=crop',
+  2: 'https://images.unsplash.com/photo-1460925895917-adf4e565f900?w=400&h=300&fit=crop',
+  3: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop',
+  4: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+  5: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop',
+  6: 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=400&h=300&fit=crop',
+  7: 'https://images.unsplash.com/photo-1460925895917-adf4e565f900?w=400&h=300&fit=crop',
+  8: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop'
+};
 
 export default function Catalog() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,88 +24,38 @@ export default function Catalog() {
     rating: []
   });
   const [sortBy, setSortBy] = useState('relevance');
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Aquí van los productos del portafolio de diseño
-  const allProducts = [
-    {
-      id: 1,
-      title: 'Tarjetas de Presentación - Diseño Premium',
-      category: 'Tarjetas',
-      price: 250,
-      rating: 5,
-      discount: 15,
-      image: 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=400&h=300&fit=crop',
-      description: 'Tarjetas de presentación de diseño moderno'
-    },
-    {
-      id: 2,
-      title: 'Pendón Publicitario - 3x2 metros',
-      category: 'Pendones',
-      price: 450,
-      rating: 4.9,
-      image: 'https://images.unsplash.com/photo-1460925895917-adf4e565f900?w=400&h=300&fit=crop',
-      description: 'Pendón de lona vinílica para exterior'
-    },
-    {
-      id: 3,
-      title: 'Cuadro Corporativo - Canvas 60x80 cm',
-      category: 'Cuadros',
-      price: 320,
-      rating: 5,
-      discount: 10,
-      image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop',
-      description: 'Cuadro decorativo en canvas de alta calidad'
-    },
-    {
-      id: 4,
-      title: 'Diseño de Logo - Paquete Completo',
-      category: 'Logos',
-      price: 500,
-      rating: 4.95,
-      discount: 20,
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
-      description: 'Diseño de logo profesional con múltiples variaciones'
-    },
-    {
-      id: 5,
-      title: 'Empaque de Producto - Caja Kraft',
-      category: 'Empaques',
-      price: 800,
-      rating: 4.8,
-      image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop',
-      description: 'Caja de empaque personalizada en kraft'
-    },
-    {
-      id: 6,
-      title: 'Identidad Corporativa Completa',
-      category: 'Identidad',
-      price: 1200,
-      rating: 5,
-      discount: 25,
-      image: 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=400&h=300&fit=crop',
-      description: 'Paquete completo de identidad visual'
-    },
-    {
-      id: 7,
-      title: 'Volante Doblado A4 - 1000 unidades',
-      category: 'Volantes',
-      price: 180,
-      rating: 4.7,
-      image: 'https://images.unsplash.com/photo-1460925895917-adf4e565f900?w=400&h=300&fit=crop',
-      description: 'Volantes en papel couché doblados'
-    },
-    {
-      id: 8,
-      title: 'Póster Decorativo - 70x100 cm',
-      category: 'Posters',
-      price: 95,
-      rating: 4.9,
-      discount: 5,
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
-      description: 'Póster artístico en papel satinado'
-    }
-  ];
+  // Cargar productos desde la API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:8000/api/productos/');
+        const data = await response.json();
+        
+        // Mapear datos de la API al formato esperado por el componente
+        const mappedProducts = data.results.map(product => ({
+          id: product.id,
+          title: product.nombre,
+          category: product.categoria,
+          price: parseFloat(product.precio),
+          rating: 4.5, // Rating por defecto, se actualiza en ProductDetail
+          image: imageMap[product.id] || 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+          description: product.descripcion
+        }));
+        
+        setAllProducts(mappedProducts);
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // Filtrar y buscar productos
   const filteredProducts = useMemo(() => {
@@ -217,26 +178,33 @@ export default function Catalog() {
 
         {/* Productos Grid */}
         <div className={styles.productsSection}>
-          <div className={styles.resultsInfo}>
-            <span>Mostrando {filteredProducts.length} de {allProducts.length} resultados</span>
-          </div>
-
-          {filteredProducts.length > 0 ? (
-            <div className={styles.productsGrid}>
-              {filteredProducts.map(product => (
-                <Link key={product.id} to={`/producto/${product.id}`} className={styles.productCardLink}>
-                  <ProductCard 
-                    product={product}
-                    onSelect={setSelectedProduct}
-                  />
-                </Link>
-              ))}
+          {loading ? (
+            <div className={styles.loading}>
+              <p>Cargando productos...</p>
             </div>
           ) : (
-            <div className={styles.noResults}>
-              <h3>No se encontraron resultados</h3>
-              <p>Intenta ajustar los filtros o términos de búsqueda</p>
-            </div>
+            <>
+              <div className={styles.resultsInfo}>
+                <span>Mostrando {filteredProducts.length} de {allProducts.length} resultados</span>
+              </div>
+
+              {filteredProducts.length > 0 ? (
+                <div className={styles.productsGrid}>
+                  {filteredProducts.map(product => (
+                    <Link key={product.id} to={`/producto/${product.id}`} className={styles.productCardLink}>
+                      <ProductCard 
+                        product={product}
+                      />
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.noResults}>
+                  <h3>No se encontraron resultados</h3>
+                  <p>Intenta ajustar los filtros o términos de búsqueda</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

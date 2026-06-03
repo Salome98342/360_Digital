@@ -10,6 +10,8 @@ export default function Contact() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,16 +21,40 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Por ahora solo mostrar confirmación
-    // Luego conectar con backend
-    console.log('Formulario enviado:', formData);
-    setSubmitted(true);
-    setTimeout(() => {
-      setFormData({ nombre: '', email: '', mensaje: '' });
-      setSubmitted(false);
-    }, 3000);
+    setIsSubmitting(true);
+    setError(false);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/contacto/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nombre_completo: formData.nombre,
+          correo: formData.email,
+          mensaje: formData.mensaje,
+          telefono: ''
+        })
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        setFormData({ nombre: '', email: '', mensaje: '' });
+        setTimeout(() => {
+          setSubmitted(false);
+        }, 5000);
+      } else {
+        setError(true);
+      }
+    } catch (error) {
+      console.error('Error al enviar formulario:', error);
+      setError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -95,6 +121,12 @@ export default function Contact() {
               </div>
             )}
 
+            {error && (
+              <div className={styles.error}>
+                ✗ Error al enviar el mensaje. Por favor, intenta de nuevo.
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className={styles.form}>
               <div className={styles.formGroup}>
                 <label htmlFor="nombre">Nombre</label>
@@ -106,6 +138,7 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   placeholder="Tu nombre completo"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -119,6 +152,7 @@ export default function Contact() {
                   onChange={handleChange}
                   required
                   placeholder="tu@email.com"
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -132,11 +166,12 @@ export default function Contact() {
                   required
                   placeholder="Cuéntanos sobre tu proyecto..."
                   rows="5"
+                  disabled={isSubmitting}
                 />
               </div>
 
-              <button type="submit" className={styles.submitButton}>
-                Enviar
+              <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+                {isSubmitting ? 'Enviando...' : 'Enviar'}
               </button>
 
               <p className={styles.disclaimer}>
