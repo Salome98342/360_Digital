@@ -19,6 +19,22 @@ class Administrador(models.Model):
     def __str__(self):
         return self.usuario
 
+    def save(self, *args, **kwargs):
+        """
+        Hashear la contraseña antes de guardar si es nueva.
+        """
+        if not self.pk:  # Solo si es nuevo
+            from django.contrib.auth.hashers import make_password
+            self.contrasena = make_password(self.contrasena)
+        super().save(*args, **kwargs)
+
+    def check_password(self, raw_password):
+        """
+        Verificar si la contraseña coincide con el hash.
+        """
+        from django.contrib.auth.hashers import check_password
+        return check_password(raw_password, self.contrasena)
+
 
 class Servicio(models.Model):
     nombre = models.CharField(max_length=150)

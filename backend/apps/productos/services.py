@@ -90,7 +90,7 @@ Por favor, responde a este cliente lo antes posible.
         .section-title {{
             font-size: 14px;
             font-weight: 700;
-            color: #667eea;
+            color: #cd1d1d;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 15px;
@@ -114,7 +114,7 @@ Por favor, responde a este cliente lo antes posible.
         }}
         .message-box {{
             background-color: #f5f5f5;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #cd1d1d;
             padding: 15px;
             border-radius: 4px;
             margin-top: 10px;
@@ -315,13 +315,13 @@ Marketing y Desarrollo Digital
         }}
         .channels {{
             background-color: #e8f4f8;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #cd1d1d;
             padding: 15px;
             margin: 15px 0;
             border-radius: 4px;
         }}
         .channels strong {{
-            color: #667eea;
+            color: #cd1d1d;
             display: block;
             margin-bottom: 10px;
         }}

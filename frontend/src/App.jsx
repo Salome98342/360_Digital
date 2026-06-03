@@ -4,6 +4,8 @@ import Catalog from './pages/Catalog'
 import ProductDetail from './pages/ProductDetail'
 import About from './pages/About'
 import Contact from './pages/Contact'
+import AdminLogin from './pages/AdminLogin'
+import AdminDashboard from './pages/AdminDashboard'
 import './App.css'
 
 const router = createBrowserRouter([
@@ -26,6 +28,14 @@ const router = createBrowserRouter([
   {
     path: '/contacto',
     element: <Contact />
+  },
+  {
+    path: '/admin/login',
+    element: <AdminLogin />
+  },
+  {
+    path: '/admin/dashboard',
+    element: <AdminDashboard />
   }
 ])
 
