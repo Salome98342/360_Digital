@@ -10,7 +10,8 @@ export default function About() {
       <div className={styles.content}>
         <div className={styles.messageContainer}>
           <h1 className={styles.title}>Nosotros</h1>
-          <div className={styles.comingSoon}>
+            <div className={styles.comingSoon}>
+
             <h2>Próximamente</h2>
             <p>Estamos preparando algo increíble para ti. Nuestra historia, nuestro equipo y nuestra pasión por el diseño digital estarán aquí muy pronto.</p>
             <Link to="/" className={styles.button}>Volver al Inicio</Link>

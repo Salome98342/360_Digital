@@ -140,7 +140,7 @@ export default function Contact() {
               </button>
 
               <p className={styles.disclaimer}>
-                Se compartirá el nombre de tu perfil de Zooma. Nunca envíes contraseñas.
+                Se compartiran datos como tu nomrbre y correo electrónico con el equipo de 360 Digital para responder a tu consulta. No compartiremos tu información con terceros sin tu consentimiento.
               </p>
             </form>
           </div>
