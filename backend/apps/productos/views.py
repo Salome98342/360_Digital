@@ -1,6 +1,8 @@
 """
 Views for productos app.
 """
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -73,10 +75,41 @@ class FormularioContactoViewSet(viewsets.ModelViewSet):
     pagination_class = None
     
     def create(self, request, *args, **kwargs):
-        """Crear nuevo mensaje de contacto"""
+        """Crear nuevo mensaje de contacto y enviar email"""
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            contacto = serializer.save()
+            
+            # Enviar email al correo de 360 Digital
+            subject = f"Nuevo mensaje de contacto de {contacto.nombre_completo}"
+            message = f"""
+Hola,
+
+Tienes un nuevo mensaje de contacto en tu sitio web.
+
+Información del contacto:
+- Nombre: {contacto.nombre_completo}
+- Correo: {contacto.correo}
+- Teléfono: {contacto.telefono or 'No proporcionado'}
+
+Mensaje:
+{contacto.mensaje}
+
+---
+Este es un mensaje automático del sistema de contacto.
+            """
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    ['publicidad360caicedonia@gmail.com'],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Error al enviar email: {str(e)}")
+            
             return Response(
                 {'detail': 'Mensaje recibido correctamente'},
                 status=status.HTTP_201_CREATED
