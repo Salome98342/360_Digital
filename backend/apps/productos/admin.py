@@ -32,6 +32,8 @@ class CategoriaProductoAdmin(admin.ModelAdmin):
 class GaleriaProductoInline(admin.TabularInline):
     model = GaleriaProducto
     extra = 1
+    fields = ['url_imagen', 'descripcion']
+    readonly_fields = []
 
 
 @admin.register(Producto)
@@ -56,8 +58,9 @@ class ProductoAdmin(admin.ModelAdmin):
 
 @admin.register(GaleriaProducto)
 class GaleriaProductoAdmin(admin.ModelAdmin):
-    list_display = ['id_producto', 'url_imagen']
+    list_display = ['id_producto', 'url_imagen', 'descripcion']
     search_fields = ['id_producto__nombre']
+    fields = ['id_producto', 'url_imagen', 'descripcion']
 
 
 @admin.register(Resena)

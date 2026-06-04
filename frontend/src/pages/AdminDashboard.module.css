@@ -248,6 +248,148 @@
   background: #d32f2f;
 }
 
+/* Especificaciones */
+.especificaciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.especRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr 40px;
+  gap: 10px;
+  align-items: center;
+}
+
+.especNombre,
+.especValor {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.especNombre:focus,
+.especValor:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.removeBtn {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 8px;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.removeBtn:hover {
+  background: #d32f2f;
+}
+
+.addEspecBtn {
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.addEspecBtn:hover {
+  background: #764ba2;
+  transform: translateY(-2px);
+}
+
+/* Galería de Imágenes */
+.galeriaUpload {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.fileInput {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex: 1;
+  cursor: pointer;
+}
+
+.uploadBtn {
+  background: #388e3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.uploadBtn:hover:not(:disabled) {
+  background: #2e7d32;
+  transform: translateY(-2px);
+}
+
+.uploadBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.galeriaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.galeriaItem {
+  position: relative;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f9f9f9;
+}
+
+.galeriaImage {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+.deleteImageBtn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(244, 67, 54, 0.9);
+  color: white;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.deleteImageBtn:hover {
+  background: #d32f2f;
+}
+
 .loading {
   display: flex;
   justify-content: center;

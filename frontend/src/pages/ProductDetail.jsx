@@ -209,10 +209,10 @@ export default function ProductDetail() {
 
           {/* Specifications */}
           <div className={styles.specs}>
-            {product.especificaciones && Object.entries(product.especificaciones).map(([key, value]) => (
-              <div key={key} className={styles.specItem}>
-                <span className={styles.specLabel}>{key.charAt(0).toUpperCase() + key.slice(1)}:</span>
-                <span className={styles.specValue}>{value}</span>
+            {product.especificaciones && Array.isArray(product.especificaciones) && product.especificaciones.map((spec) => (
+              <div key={spec.id} className={styles.specItem}>
+                <span className={styles.specLabel}>{spec.nombre}:</span>
+                <span className={styles.specValue}>{spec.valor}</span>
               </div>
             ))}
           </div>

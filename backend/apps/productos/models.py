@@ -77,9 +77,6 @@ class Producto(models.Model):
     descripcion = models.TextField(blank=True, null=True)
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     
-    # Especificaciones en JSON
-    especificaciones = models.JSONField(blank=True, null=True)
-    
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
@@ -90,6 +87,24 @@ class Producto(models.Model):
         return self.nombre
 
 
+class Especificacion(models.Model):
+    """Especificaciones de un producto (nombre + descripción)"""
+    id_producto = models.ForeignKey(
+        Producto,
+        on_delete=models.CASCADE,
+        related_name='especificaciones',
+        db_column='id_producto'
+    )
+    nombre = models.CharField(max_length=100)  # ej: "Tamaño", "Material", "Color"
+    valor = models.CharField(max_length=255)   # ej: "A4", "Papel Premium", "Azul"
+    
+    class Meta:
+        db_table = 'especificacion'
+    
+    def __str__(self):
+        return f"{self.nombre}: {self.valor}"
+
+
 class GaleriaProducto(models.Model):
     id_producto = models.ForeignKey(
         Producto,
@@ -98,7 +113,7 @@ class GaleriaProducto(models.Model):
         db_column='id_producto'
     )
     
-    url_imagen = models.URLField()
+    url_imagen = models.FileField(upload_to='images/')
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:

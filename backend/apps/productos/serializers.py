@@ -4,7 +4,7 @@ Serializers for productos app.
 from rest_framework import serializers
 from .models import (
     Administrador, Servicio, CategoriaProducto, Producto,
-    GaleriaProducto, Resena, FormularioContacto
+    GaleriaProducto, Resena, FormularioContacto, Especificacion
 )
 
 
@@ -26,10 +26,32 @@ class CategoriaProductoSerializer(serializers.ModelSerializer):
         fields = ['id', 'nombre', 'descripcion']
 
 
+class EspecificacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Especificacion
+        fields = ['id', 'id_producto', 'nombre', 'valor']
+
+
 class GaleriaProductoSerializer(serializers.ModelSerializer):
+    url_imagen = serializers.SerializerMethodField()
+
     class Meta:
         model = GaleriaProducto
         fields = ['id', 'url_imagen', 'descripcion']
+
+    def get_url_imagen(self, obj):
+        if not obj.url_imagen:
+            return None
+
+        image_name = str(obj.url_imagen)
+        if image_name.startswith(('http://', 'https://')):
+            return image_name
+
+        image_url = obj.url_imagen.url
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(image_url)
+        return image_url
 
 
 class ResenaSerializer(serializers.ModelSerializer):
@@ -40,20 +62,76 @@ class ResenaSerializer(serializers.ModelSerializer):
 
 
 class ProductoListSerializer(serializers.ModelSerializer):
-    """Serializer for product list view"""
-    categoria = serializers.SerializerMethodField()
+    """Serializer for product list view - supports read and write"""
+    categoria = serializers.SerializerMethodField(read_only=True)
+    categoria_nombre = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    especificaciones = EspecificacionSerializer(many=True, read_only=True)
+    galeria = GaleriaProductoSerializer(many=True, read_only=True)
     
     class Meta:
         model = Producto
-        fields = ['id', 'nombre', 'descripcion', 'precio', 'categoria', 'fecha_creacion']
+        fields = ['id', 'nombre', 'descripcion', 'precio', 'categoria', 'especificaciones', 'galeria', 'fecha_creacion', 'categoria_nombre']
+        read_only_fields = ['id', 'fecha_creacion']
     
     def get_categoria(self, obj):
         return obj.id_categoria.nombre
+    
+    def create(self, validated_data):
+        """Create a new product with category name lookup and admin assignment"""
+        categoria_nombre = validated_data.pop('categoria_nombre', None)
+        
+        # Get category by name (case-insensitive)
+        if categoria_nombre:
+            categoria = CategoriaProducto.objects.filter(
+                nombre__iexact=categoria_nombre
+            ).first()
+            if not categoria:
+                raise serializers.ValidationError(
+                    {'categoria': f'Category "{categoria_nombre}" not found'}
+                )
+            validated_data['id_categoria'] = categoria
+        else:
+            raise serializers.ValidationError(
+                {'categoria': 'Category name is required'}
+            )
+        
+        # Assign admin from request user (if available)
+        # For now, use the first admin as fallback
+        from .models import Administrador
+        admin = Administrador.objects.first()
+        if not admin:
+            raise serializers.ValidationError(
+                {'admin': 'No admin user configured'}
+            )
+        validated_data['id_admin'] = admin
+        
+        return Producto.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        """Update product fields and apply category name changes."""
+        categoria_nombre = validated_data.pop('categoria_nombre', None)
+
+        if categoria_nombre:
+            categoria = CategoriaProducto.objects.filter(
+                nombre__iexact=categoria_nombre
+            ).first()
+            if not categoria:
+                raise serializers.ValidationError(
+                    {'categoria': f'Category "{categoria_nombre}" not found'}
+                )
+            instance.id_categoria = categoria
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 class ProductoDetailSerializer(serializers.ModelSerializer):
     """Serializer for product detail view"""
     categoria = serializers.SerializerMethodField()
+    especificaciones = EspecificacionSerializer(many=True, read_only=True)
     galeria = GaleriaProductoSerializer(many=True, read_only=True)
     resenas = ResenaSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField()

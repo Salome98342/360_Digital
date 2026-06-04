@@ -5,13 +5,14 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     ServicioViewSet, CategoriaProductoViewSet, ProductoViewSet,
-    FormularioContactoViewSet
+    FormularioContactoViewSet, EspecificacionViewSet
 )
 
 router = DefaultRouter()
 router.register(r'servicios', ServicioViewSet, basename='servicio')
 router.register(r'categorias', CategoriaProductoViewSet, basename='categoria')
 router.register(r'productos', ProductoViewSet, basename='producto')
+router.register(r'especificaciones', EspecificacionViewSet, basename='especificacion')
 router.register(r'contacto', FormularioContactoViewSet, basename='contacto')
 
 urlpatterns = [

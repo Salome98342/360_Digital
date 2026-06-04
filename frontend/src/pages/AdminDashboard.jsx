@@ -8,15 +8,21 @@ export default function AdminDashboard() {
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [deletedEspecificaciones, setDeletedEspecificaciones] = useState([]);
+  
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
     precio: '',
-    categoria: 'tarjetas',
-    especificaciones: ''
+    categoria: 'Tarjetas',
+    especificaciones: []
   });
+  
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [galeriaImages, setGaleriaImages] = useState([]);
+  const [imagenACargar, setImagenACargar] = useState(null);
 
   useEffect(() => {
     verificarAutenticacion();
@@ -88,44 +94,234 @@ export default function AdminDashboard() {
     }));
   };
 
+  const handleEspecificacionChange = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      especificaciones: prev.especificaciones.map((esp, i) =>
+        i === index ? { ...esp, [field]: value } : esp
+      )
+    }));
+  };
+
+  const addEspecificacion = () => {
+    setFormData(prev => ({
+      ...prev,
+      especificaciones: [...prev.especificaciones, { nombre: '', valor: '' }]
+    }));
+  };
+
+  const removeEspecificacion = (index) => {
+    const especificacion = formData.especificaciones[index];
+    // Si la especificación tiene id, significa que existe en el backend y debe ser eliminada
+    if (especificacion.id) {
+      setDeletedEspecificaciones(prev => [...prev, especificacion.id]);
+    }
+    setFormData(prev => ({
+      ...prev,
+      especificaciones: prev.especificaciones.filter((_, i) => i !== index)
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      nombre: '',
+      descripcion: '',
+      precio: '',
+      categoria: 'Tarjetas',
+      especificaciones: []
+    });
+    setGaleriaImages([]);
+    setImagenACargar(null);
+    setEditingId(null);
+    setDeletedEspecificaciones([]);
+  };
+
+  const handleEdit = (producto) => {
+    setEditingId(producto.id);
+    setFormData({
+      nombre: producto.nombre,
+      descripcion: producto.descripcion || '',
+      precio: producto.precio,
+      categoria: producto.categoria,
+      especificaciones: producto.especificaciones || []
+    });
+    setGaleriaImages(producto.galeria || []);
+    setDeletedEspecificaciones([]);
+    setShowForm(true);
+    setError('');
+    setSuccess('');
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/productos/${id}/`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        setError('Error al eliminar el producto');
+        return;
+      }
+
+      setSuccess('Producto eliminado exitosamente');
+      cargarProductos();
+    } catch (err) {
+      setError('Error: ' + err.message);
+      console.error('Error:', err);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/productos/', {
-        method: 'POST',
+      const method = editingId ? 'PUT' : 'POST';
+      const url = editingId 
+        ? `http://localhost:8000/api/productos/${editingId}/`
+        : 'http://localhost:8000/api/productos/';
+
+      const requestData = {
+        nombre: formData.nombre,
+        descripcion: formData.descripcion,
+        precio: parseFloat(formData.precio),
+        categoria_nombre: formData.categoria
+      };
+
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          nombre: formData.nombre,
-          descripcion: formData.descripcion,
-          precio: formData.precio,
-          categoria: formData.categoria,
-          especificaciones: formData.especificaciones ? JSON.parse(formData.especificaciones) : {}
-        })
+        body: JSON.stringify(requestData)
       });
 
       if (!response.ok) {
-        setError('Error al crear el producto');
+        const errorData = await response.json();
+        setError(`Error: ${JSON.stringify(errorData)}`);
+        console.error('Error response:', errorData);
         return;
       }
 
-      setSuccess('Producto creado exitosamente');
-      setFormData({
-        nombre: '',
-        descripcion: '',
-        precio: '',
-        categoria: 'tarjetas',
-        especificaciones: ''
-      });
+      const productoData = await response.json();
+
+      // Eliminar especificaciones que fueron removidas
+      if (deletedEspecificaciones.length > 0) {
+        for (const especId of deletedEspecificaciones) {
+          try {
+            await fetch(`http://localhost:8000/api/especificaciones/${especId}/`, {
+              method: 'DELETE',
+              credentials: 'include'
+            });
+          } catch (err) {
+            console.error('Error eliminando especificación:', err);
+          }
+        }
+      }
+
+      // Guardar especificaciones nuevas
+      if (formData.especificaciones.length > 0) {
+        for (const esp of formData.especificaciones) {
+          // Solo crear especificaciones nuevas (sin id)
+          if (esp.nombre && esp.valor && !esp.id) {
+            await fetch(`http://localhost:8000/api/especificaciones/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                id_producto: productoData.id,
+                nombre: esp.nombre,
+                valor: esp.valor
+              })
+            });
+          }
+        }
+      }
+
+      setSuccess(editingId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente');
+      resetForm();
       setShowForm(false);
       cargarProductos();
     } catch (err) {
       setError('Error: ' + err.message);
+      console.error('Error:', err);
+    }
+  };
+
+  const handleUploadImage = async () => {
+    if (!imagenACargar || !editingId) {
+      setError('Selecciona una imagen primero');
+      return;
+    }
+
+    try {
+      const formDataImg = new FormData();
+      formDataImg.append('imagen', imagenACargar);
+
+      console.log('Subiendo imagen para producto:', editingId);
+      console.log('Archivo:', imagenACargar);
+
+      const response = await fetch(`http://localhost:8000/api/productos/${editingId}/upload_image/`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataImg
+      });
+
+      console.log('Response status:', response.status);
+      const responseData = await response.json();
+      console.log('Response data:', responseData);
+
+      if (!response.ok) {
+        setError(`Error al subir imagen: ${JSON.stringify(responseData)}`);
+        return;
+      }
+
+      const nuevaImagen = responseData;
+      setGaleriaImages([...galeriaImages, nuevaImagen]);
+      setImagenACargar(null);
+      setSuccess('Imagen subida exitosamente');
+      
+      // Limpiar el input file
+      const fileInput = document.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
+    } catch (err) {
+      console.error('Error catch:', err);
+      setError('Error al subir imagen: ' + err.message);
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/productos/${editingId}/delete_image/?image_id=${imageId}`,
+        {
+          method: 'DELETE',
+          credentials: 'include'
+        }
+      );
+
+      if (!response.ok) {
+        setError('Error al eliminar la imagen');
+        return;
+      }
+
+      setGaleriaImages(galeriaImages.filter(img => img.id !== imageId));
+      setSuccess('Imagen eliminada exitosamente');
+    } catch (err) {
+      setError('Error al eliminar imagen: ' + err.message);
       console.error('Error:', err);
     }
   };
@@ -154,9 +350,15 @@ export default function AdminDashboard() {
             <h2>Productos</h2>
             <button 
               className={styles.addBtn}
-              onClick={() => setShowForm(!showForm)}
+              onClick={() => {
+                if (editingId) {
+                  resetForm();
+                } else {
+                  setShowForm(!showForm);
+                }
+              }}
             >
-              {showForm ? 'Cancelar' : '+ Nuevo Producto'}
+              {showForm || editingId ? 'Cancelar' : '+ Nuevo Producto'}
             </button>
           </div>
 
@@ -164,7 +366,7 @@ export default function AdminDashboard() {
           {success && <div className={styles.success}>{success}</div>}
 
           {/* Formulario */}
-          {showForm && (
+          {(showForm || editingId) && (
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
@@ -199,10 +401,14 @@ export default function AdminDashboard() {
                     value={formData.categoria}
                     onChange={handleFormChange}
                   >
-                    <option value="tarjetas">Tarjetas</option>
-                    <option value="volantes">Volantes</option>
-                    <option value="banners">Banners</option>
-                    <option value="otros">Otros</option>
+                    <option value="Tarjetas">Tarjetas</option>
+                    <option value="Volantes">Volantes</option>
+                    <option value="Cuadros">Cuadros</option>
+                    <option value="Empaques">Empaques</option>
+                    <option value="Identidad">Identidad</option>
+                    <option value="Logos">Logos</option>
+                    <option value="Pendones">Pendones</option>
+                    <option value="Posters">Posters</option>
                   </select>
                 </div>
 
@@ -213,24 +419,97 @@ export default function AdminDashboard() {
                     value={formData.descripcion}
                     onChange={handleFormChange}
                     placeholder="Descripción del producto"
-                    rows="4"
-                  ></textarea>
-                </div>
-
-                <div className={styles.formGroupFull}>
-                  <label>Especificaciones (JSON)</label>
-                  <textarea
-                    name="especificaciones"
-                    value={formData.especificaciones}
-                    onChange={handleFormChange}
-                    placeholder='{"tamaño": "A4", "papel": "mate"}'
                     rows="3"
                   ></textarea>
                 </div>
+
+                {/* Especificaciones */}
+                <div className={styles.formGroupFull}>
+                  <label>Especificaciones</label>
+                  <div className={styles.especificaciones}>
+                    {formData.especificaciones.map((esp, index) => (
+                      <div key={index} className={styles.especRow}>
+                        <input
+                          type="text"
+                          placeholder="Ej: Tamaño"
+                          value={esp.nombre}
+                          onChange={(e) => handleEspecificacionChange(index, 'nombre', e.target.value)}
+                          className={styles.especNombre}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Ej: A4"
+                          value={esp.valor}
+                          onChange={(e) => handleEspecificacionChange(index, 'valor', e.target.value)}
+                          className={styles.especValor}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeEspecificacion(index)}
+                          className={styles.removeBtn}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addEspecificacion}
+                    className={styles.addEspecBtn}
+                  >
+                    + Agregar especificación
+                  </button>
+                </div>
+
+                {/* Galería de Imágenes - Solo cuando edita */}
+                {editingId && (
+                  <div className={styles.formGroupFull}>
+                    <label>Galería de Imágenes</label>
+                    <div className={styles.galeriaUpload}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setImagenACargar(e.target.files[0])}
+                        className={styles.fileInput}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleUploadImage}
+                        className={styles.uploadBtn}
+                        disabled={!imagenACargar}
+                      >
+                        Subir Imagen
+                      </button>
+                    </div>
+
+                    {/* Galería actual */}
+                    {galeriaImages.length > 0 && (
+                      <div className={styles.galeriaGrid}>
+                        {galeriaImages.map((img) => (
+                          <div key={img.id} className={styles.galeriaItem}>
+                            <img 
+                              src={img.url_imagen} 
+                              alt={img.descripcion || 'Imagen del producto'}
+                              className={styles.galeriaImage}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteImage(img.id)}
+                              className={styles.deleteImageBtn}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <button type="submit" className={styles.submitBtn}>
-                Crear Producto
+                {editingId ? 'Actualizar Producto' : 'Crear Producto'}
               </button>
             </form>
           )}
@@ -255,11 +534,21 @@ export default function AdminDashboard() {
                     <tr key={producto.id}>
                       <td>{producto.id}</td>
                       <td>{producto.nombre}</td>
-                      <td>${producto.precio.toLocaleString('es-CO')}</td>
-                      <td>{producto.categoria || 'N/A'}</td>
+                      <td>${parseFloat(producto.precio).toLocaleString('es-CO')}</td>
+                      <td>{producto.categoria}</td>
                       <td>
-                        <button className={styles.editBtn}>Editar</button>
-                        <button className={styles.deleteBtn}>Eliminar</button>
+                        <button
+                          className={styles.editBtn}
+                          onClick={() => handleEdit(producto)}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          className={styles.deleteBtn}
+                          onClick={() => handleDelete(producto.id)}
+                        >
+                          Eliminar
+                        </button>
                       </td>
                     </tr>
                   ))}

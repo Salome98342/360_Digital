@@ -45,7 +45,7 @@ export default function Catalog() {
           category: product.categoria,
           price: parseFloat(product.precio),
           rating: 4.5, // Rating por defecto, se actualiza en ProductDetail
-          image: imageMap[product.id] || 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+          image: product.galeria?.[0]?.url_imagen || imageMap[product.id] || 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
           description: product.descripcion
         }));
         

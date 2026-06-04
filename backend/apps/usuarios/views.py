@@ -1,6 +1,7 @@
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from apps.productos.models import Administrador
@@ -28,20 +29,30 @@ class AutenticacionViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             admin = serializer.validated_data['admin']
             
-            # Generar tokens JWT
-            refresh = RefreshToken.for_user(admin)
+            # Generar tokens JWT manualmente (sin usar RefreshToken.for_user)
+            from rest_framework_simplejwt.tokens import RefreshToken as RT
+            from datetime import timedelta
+            from django.utils import timezone
+            
+            refresh = RT()
+            refresh['admin_id'] = admin.id
+            refresh['usuario'] = admin.usuario
+            
+            access = refresh.access_token
+            access['admin_id'] = admin.id
+            access['usuario'] = admin.usuario
             
             # Crear respuesta
             response = Response({
                 'detail': 'Login exitoso',
                 'admin': AdministradorSerializer(admin).data,
-                'user_id': admin.id
+                'admin_id': admin.id
             }, status=status.HTTP_200_OK)
             
             # Guardar tokens en cookies HttpOnly
             response.set_cookie(
                 key='access_token',
-                value=str(refresh.access_token),
+                value=str(access),
                 httponly=True,
                 secure=False,  # Cambiar a True en producción (HTTPS)
                 samesite='Lax',
@@ -58,6 +69,8 @@ class AutenticacionViewSet(viewsets.ViewSet):
             
             return response
         
+        # DEBUG: Imprimir errores en la consola
+        print("Errores del serializer:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
@@ -79,17 +92,23 @@ class AutenticacionViewSet(viewsets.ViewSet):
         """
         Obtener datos del admin autenticado.
         """
-        # Obtener el usuario del token
-        user_id = request.auth.user_id if hasattr(request.auth, 'user_id') else None
+        # Obtener el admin_id del token validado (request.auth es el token)
+        if hasattr(request, 'auth') and request.auth:
+            admin_id = request.auth.get('admin_id')
+        else:
+            return Response(
+                {'detail': 'No autenticado'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
         
-        if not user_id:
+        if not admin_id:
             return Response(
                 {'detail': 'No autenticado'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
         try:
-            admin = Administrador.objects.get(id=user_id)
+            admin = Administrador.objects.get(id=admin_id)
             return Response(AdministradorSerializer(admin).data)
         except Administrador.DoesNotExist:
             return Response(
@@ -97,11 +116,12 @@ class AutenticacionViewSet(viewsets.ViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny], authentication_classes=[])
     def check_auth(self, request):
         """
         Verificar si el usuario está autenticado.
         Usado por el frontend para validar sesión.
+        Permite solicitudes no autenticadas.
         """
         # Obtener token de la cookie
         access_token = request.COOKIES.get('access_token')
@@ -110,7 +130,7 @@ class AutenticacionViewSet(viewsets.ViewSet):
             return JsonResponse({
                 'authenticated': False,
                 'detail': 'No hay sesión activa'
-            }, status=status.HTTP_401_UNAUTHORIZED)
+            }, status=status.HTTP_200_OK)
         
         # Si llegamos aquí, el token es válido (validado por middleware)
         return JsonResponse({
