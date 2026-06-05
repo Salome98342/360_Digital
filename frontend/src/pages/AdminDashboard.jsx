@@ -335,7 +335,11 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerContent}>
-          <h1>Dashboard Admin</h1>
+          <div className={styles.logoMark} aria-hidden="true" />
+          <div>
+            <span className={styles.kicker}>360 Digital</span>
+            <h1>Panel administrador</h1>
+          </div>
           {admin && <p>Bienvenido, {admin.usuario}</p>}
         </div>
         <button onClick={handleLogout} className={styles.logoutBtn}>
@@ -479,7 +483,7 @@ export default function AdminDashboard() {
                         className={styles.uploadBtn}
                         disabled={!imagenACargar}
                       >
-                        Subir Imagen
+                        Subir imagen
                       </button>
                     </div>
 

@@ -60,7 +60,7 @@ export default function AdminLogin() {
     <div className={styles.loginContainer}>
       <div className={styles.loginBox}>
         <h1>LOGIN ADMIN</h1>
-        
+
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
             <label>Usuario</label>
@@ -88,8 +88,8 @@ export default function AdminLogin() {
 
           {error && <div className={styles.error}>{error}</div>}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={styles.loginButton}
             disabled={loading}
           >
@@ -100,8 +100,8 @@ export default function AdminLogin() {
 
       <div className={styles.brandBox}>
         <h2>MARKETING Y DESARROLLO DIGITAL</h2>
-        <div className={styles.logo}>🔴</div>
-        <h3>¡HAZ QUE TU <span>MARCA VENDA</span> TODS LOS <span>DÍAS</span>!</h3>
+        <div className={styles.logo} aria-hidden="true" />
+        <h3>¡HAZ QUE TU <span>MARCA VENDA</span> TODOS LOS <span>DÍAS</span>!</h3>
       </div>
     </div>
   );
