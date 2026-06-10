@@ -21,11 +21,16 @@ SECRET_KEY = config(
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Hosts permitidos
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    'mws66hqc-8000.use2.devtunnels.ms',
-]
+# En Render conviene ajustar vía variable de entorno
+# Ejemplo: DJANGO_ALLOWED_HOSTS=tu-dominio.onrender.com,api.tu-dominio.onrender.com
+_django_allowed_hosts = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1')
+ALLOWED_HOSTS = [h.strip() for h in _django_allowed_hosts.split(',') if h.strip()]
+
+# Si quieres permitir todo (no recomendado), puedes usar:
+# DJANGO_ALLOWED_HOSTS=*
+if '*' in ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -157,6 +162,13 @@ CORS_ALLOWED_ORIGINS = [
     'https://mws66hqc-5173.use2.devtunnels.ms',
 ]
 
+# Override por variables de entorno para producción
+# Ejemplo: CORS_ALLOWED_ORIGINS=https://frontend.onrender.com,https://www.frontend.com
+_cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS')
+if _cors_allowed_origins:
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_allowed_origins.split(',') if o.strip()]
+
+
 CORS_ALLOW_CREDENTIALS = True
 
 # ==========================
@@ -172,6 +184,13 @@ CSRF_COOKIE_SAMESITE = 'None'
 CSRF_TRUSTED_ORIGINS = [
     'https://mws66hqc-5173.use2.devtunnels.ms',
 ]
+
+# Override por variables de entorno para producción
+# Ejemplo: CSRF_TRUSTED_ORIGINS=https://frontend.onrender.com
+_csrf_trusted_origins = os.getenv('CSRF_TRUSTED_ORIGINS')
+if _csrf_trusted_origins:
+    CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf_trusted_origins.split(',') if o.strip()]
+
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
