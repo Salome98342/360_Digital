@@ -166,7 +166,16 @@ CORS_ALLOWED_ORIGINS = [
 # Ejemplo: CORS_ALLOWED_ORIGINS=https://frontend.onrender.com,https://www.frontend.com
 _cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS')
 if _cors_allowed_origins:
-    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_allowed_origins.split(',') if o.strip()]
+    # corsheaders valida que el origin no tenga path (ej: /)
+    # Si llega con path, lo normalizamos a scheme+host.
+    def _normalize_origin(o: str) -> str:
+        o = o.strip().rstrip('/')
+        if '/' in o.replace('://', '§§'):
+            # quita cualquier path
+            o = o.split('/', 1)[0]
+        return o
+
+    CORS_ALLOWED_ORIGINS = [_normalize_origin(o) for o in _cors_allowed_origins.split(',') if o.strip()]
 
 
 CORS_ALLOW_CREDENTIALS = True
