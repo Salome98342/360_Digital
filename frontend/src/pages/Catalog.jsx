@@ -29,10 +29,10 @@ export default function Catalog() {
 
   // Cargar productos desde la API
   useEffect(() => {
-    const fetchProducts = async () => {
+        const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:8000/api/productos/');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/`);
         const data = await response.json();
         
         console.log('API Response:', data);

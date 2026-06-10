@@ -34,7 +34,7 @@ export default function ProductDetail() {
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/productos/${id}/`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${id}/`);
       if (!response.ok) {
         navigate('/catalogo');
         return;
@@ -78,7 +78,7 @@ export default function ProductDetail() {
 
     try {
       // Hacer POST al backend
-      const response = await fetch(`http://localhost:8000/api/productos/${id}/resenas/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${id}/resenas/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
