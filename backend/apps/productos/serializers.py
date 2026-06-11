@@ -79,7 +79,7 @@ class ProductoListSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Create a new product with category name lookup and admin assignment"""
         categoria_nombre = validated_data.pop('categoria_nombre', None)
-        
+
         # Get category by name (case-insensitive)
         if categoria_nombre:
             categoria = CategoriaProducto.objects.filter(
@@ -91,21 +91,42 @@ class ProductoListSerializer(serializers.ModelSerializer):
                 )
             validated_data['id_categoria'] = categoria
         else:
-            raise serializers.ValidationError(
-                {'categoria': 'Category name is required'}
-            )
-        
-        # Assign admin from request user (if available)
-        # For now, use the first admin as fallback
+            # Si el frontend manda id_categoria directamente, aceptarlo
+            if validated_data.get('id_categoria'):
+                pass
+            else:
+                raise serializers.ValidationError(
+                    {'categoria': 'Category name is required'}
+                )
+
+        # Assign admin.
+        # Preferimos admin desde request si el auth está funcionando,
+        # si no, usamos el primer admin como fallback.
+        request = self.context.get('request')
+        admin_id = None
+        if request and hasattr(request, 'auth') and request.auth:
+            admin_id = request.auth.get('admin_id')
+
         from .models import Administrador
-        admin = Administrador.objects.first()
+        admin = None
+        if admin_id:
+            admin = Administrador.objects.filter(id=admin_id).first()
+
+        if not admin:
+            admin = Administrador.objects.first()
+
         if not admin:
             raise serializers.ValidationError(
                 {'admin': 'No admin user configured'}
             )
+
         validated_data['id_admin'] = admin
-        
-        return Producto.objects.create(**validated_data)
+
+        # Filtrar campos extra que no existan en el modelo
+        model_fields = {f.name for f in Producto._meta.get_fields() if hasattr(f, 'attname')}
+        safe_data = {k: v for k, v in validated_data.items() if k in model_fields or k in {'id_categoria', 'id_admin'}}
+
+        return Producto.objects.create(**safe_data)
 
     def update(self, instance, validated_data):
         """Update product fields and apply category name changes."""
