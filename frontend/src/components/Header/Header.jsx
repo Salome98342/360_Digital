@@ -1,8 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
 import styles from './Header.module.css'
+import logoImg from '../../images/Logo.png'
 
 export default function Header() {
   const location = useLocation()
+
 
   const navLinks = [
     { label: 'Inicio', path: '/' },
@@ -22,9 +24,10 @@ export default function Header() {
         {/* Logo */}
         <div className={styles.logo}>
           <Link to="/" style={{ textDecoration: 'none' }}>
-            <div className={styles.logoOval}></div>
+            <img className={styles.logoImg} src={logoImg} alt="Logo" />
           </Link>
         </div>
+
 
         {/* Navigation */}
         <nav className={styles.nav}>

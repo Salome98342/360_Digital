@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './AdminLogin.module.css';
+import LogoImg from '../images/Logo.png';
 
 export default function AdminLogin() {
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     usuario: '',
@@ -100,7 +102,7 @@ export default function AdminLogin() {
 
       <div className={styles.brandBox}>
         <h2>MARKETING Y DESARROLLO DIGITAL</h2>
-        <div className={styles.logo} aria-hidden="true" />
+        <img className={styles.logo} src={LogoImg} alt="Logo" />
         <h3>¡HAZ QUE TU <span>MARCA VENDA</span> TODOS LOS <span>DÍAS</span>!</h3>
       </div>
     </div>
