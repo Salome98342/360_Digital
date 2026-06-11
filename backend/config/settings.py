@@ -159,26 +159,27 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
-    'https://mws66hqc-5173.use2.devtunnels.ms',
 ]
 
-# Override por variables de entorno para producción
-# Ejemplo: CORS_ALLOWED_ORIGINS=https://frontend.onrender.com,https://www.frontend.com
 _cors_allowed_origins = os.getenv('CORS_ALLOWED_ORIGINS')
+
 if _cors_allowed_origins:
-    # corsheaders valida que el origin no tenga path (ej: /)
-    # Si llega con path, lo normalizamos a scheme+host.
-    def _normalize_origin(o: str) -> str:
-        o = o.strip().rstrip('/')
-        if '/' in o.replace('://', '§§'):
-            # quita cualquier path
-            o = o.split('/', 1)[0]
-        return o
-
-    CORS_ALLOWED_ORIGINS = [_normalize_origin(o) for o in _cors_allowed_origins.split(',') if o.strip()]
-
-
-CORS_ALLOW_CREDENTIALS = True
+    CORS_ALLOWED_ORIGINS = []
+    
+    for origen in _cors_allowed_origins.split(','):
+        origen = origen.strip()
+        if not origen:
+            continue
+            
+        # Si la URL tiene "://", separamos el protocolo del dominio
+        partes = origen.split('://')
+        if len(partes) == 2:
+            # Tomamos la parte del dominio y cortamos si hay barras adicionales (ej: /admin)
+            dominio_limpio = partes[1].split('/')[0]
+            CORS_ALLOWED_ORIGINS.append(f"{partes[0]}://{dominio_limpio}")
+        else:
+            # Fallback en caso de que el formato sea diferente
+            CORS_ALLOWED_ORIGINS.append(origen.rstrip('/'))
 
 # ==========================
 # COOKIES / JWT
