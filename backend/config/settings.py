@@ -153,6 +153,7 @@ SIMPLE_JWT = {
 # ==========================
 # CORS CONFIGURATION
 # ==========================
+# Orígenes locales permitidos para desarrollo
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
@@ -176,11 +177,12 @@ if _cors_allowed_origins:
         if len(partes) == 2:
             # Tomamos la parte del dominio y cortamos si hay barras adicionales (ej: /admin)
             dominio_limpio = partes[1].split('/')[0]
-            CORS_ALLOWED_ORIGINS.append(f"{partes[0]}://{360-digital.vercel.app}")
+            # Usamos la variable dominio_limpio, NO el dominio escrito a mano
+            CORS_ALLOWED_ORIGINS.append(f"{partes[0]}://{dominio_limpio}")
         else:
             # Fallback en caso de que el formato sea diferente
             CORS_ALLOWED_ORIGINS.append(origen.rstrip('/'))
-
+            
 # ==========================
 # COOKIES / JWT
 # ==========================
