@@ -27,7 +27,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/login/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/administrador/autenticacion/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
