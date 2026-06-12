@@ -31,7 +31,8 @@ export default function AdminDashboard() {
 
   const verificarAutenticacion = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/usuarios/autenticacion/check_auth/', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/autenticacion/check_auth/`, {
+
         method: 'GET',
         credentials: 'include'
       });
@@ -42,7 +43,7 @@ export default function AdminDashboard() {
       }
 
       // Obtener datos del admin
-      const meResponse = await fetch('http://localhost:8000/api/usuarios/autenticacion/me/', {
+      const meResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/autenticacion/me/`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -59,7 +60,7 @@ export default function AdminDashboard() {
 
   const cargarProductos = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/productos/', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/`, {
         credentials: 'include'
       });
 
