@@ -54,15 +54,15 @@ export default function Home() {
           <div className={styles.mapSection}>
             <h2 className={styles.sectionTitle}>ENCUÉNTRANOS <span className={styles.highlight}>AQUÍ</span></h2>
             <div className={styles.iframeWrapper}>
-              <iframe 
+              <iframe><
                 src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3978.4036888188243!2d-75.8269065!3d4.335065!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e38539941b7e95d%3A0x5e2854dfb0737227!2s360%20Digital!5e0!3m2!1ses-419!2sco!4v1780687194905!5m2!1ses-419!2sco" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
                 allowFullScreen="" 
                 loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade">
-              </iframe>
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
             </div>
           </div>
 

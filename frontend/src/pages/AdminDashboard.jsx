@@ -75,10 +75,27 @@ export default function AdminDashboard() {
     }
   };
 
+  // Función auxiliar para obtener el token CSRF de las cookies
+  const getCookie = (name) => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  };
+
   const handleLogout = async () => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/logout/`, {
         method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
         credentials: 'include'
       });
       navigate('/admin/login');
@@ -199,6 +216,7 @@ export default function AdminDashboard() {
         method,
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
         },
         credentials: 'include',
         body: JSON.stringify(requestData)
@@ -219,6 +237,7 @@ export default function AdminDashboard() {
           try {
             await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/${especId}/`, {
               method: 'DELETE',
+              headers: { 'X-CSRFToken': getCookie('csrftoken') },
               credentials: 'include'
             });
           } catch (err) {
@@ -273,6 +292,7 @@ export default function AdminDashboard() {
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${editingId}/upload_image/`, {
         method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
         credentials: 'include',
         body: formDataImg
       });
@@ -310,6 +330,7 @@ export default function AdminDashboard() {
         `${import.meta.env.VITE_API_URL}/api/productos/${editingId}/delete_image/?image_id=${imageId}`,
         {
           method: 'DELETE',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') },
           credentials: 'include'
         }
       );
