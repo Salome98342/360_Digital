@@ -8,6 +8,7 @@ from apps.productos.models import Administrador
 from .serializers import LoginSerializer, AdministradorSerializer
 
 
+
 class AutenticacionViewSet(viewsets.ViewSet):
     """
     ViewSet para autenticación de administradores.
@@ -50,22 +51,25 @@ class AutenticacionViewSet(viewsets.ViewSet):
             }, status=status.HTTP_200_OK)
             
             # Guardar tokens en cookies HttpOnly
+            # Importante para producción (HTTPS + cross-site / Vercel + fetch con credentials)
+            # En SameSite=None el navegador requiere Secure.
             response.set_cookie(
                 key='access_token',
                 value=str(access),
                 httponly=True,
-                secure=False,  # Cambiar a True en producción (HTTPS)
-                samesite='Lax',
+                secure=True,
+                samesite='None',
                 max_age=3600  # 1 hora
             )
             response.set_cookie(
                 key='refresh_token',
                 value=str(refresh),
                 httponly=True,
-                secure=False,  # Cambiar a True en producción
-                samesite='Lax',
+                secure=True,
+                samesite='None',
                 max_age=86400 * 7  # 7 días
             )
+
             
             return response
         
