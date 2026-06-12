@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
   const verificarAutenticacion = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/autenticacion/check_auth/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/check_auth/`, {
 
         method: 'GET',
         credentials: 'include'
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
       }
 
       // Obtener datos del admin
-      const meResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/usuarios/autenticacion/me/`, {
+      const meResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/me/`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
 
   const cargarProductos = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/productos/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/`, {
         credentials: 'include'
       });
 
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:8000/api/usuarios/autenticacion/logout/', {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/logout/`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -159,7 +159,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/productos/${id}/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${id}/`, {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -185,8 +185,8 @@ export default function AdminDashboard() {
     try {
       const method = editingId ? 'PUT' : 'POST';
       const url = editingId 
-        ? `http://localhost:8000/api/productos/${editingId}/`
-        : 'http://localhost:8000/api/productos/';
+        ? `${import.meta.env.VITE_API_URL}/api/productos/${editingId}/`
+        : `${import.meta.env.VITE_API_URL}/api/productos/`;
 
       const requestData = {
         nombre: formData.nombre,
@@ -217,7 +217,7 @@ export default function AdminDashboard() {
       if (deletedEspecificaciones.length > 0) {
         for (const especId of deletedEspecificaciones) {
           try {
-            await fetch(`http://localhost:8000/api/especificaciones/${especId}/`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/${especId}/`, {
               method: 'DELETE',
               credentials: 'include'
             });
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
         for (const esp of formData.especificaciones) {
           // Solo crear especificaciones nuevas (sin id)
           if (esp.nombre && esp.valor && !esp.id) {
-            await fetch(`http://localhost:8000/api/especificaciones/`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -271,7 +271,7 @@ export default function AdminDashboard() {
       console.log('Subiendo imagen para producto:', editingId);
       console.log('Archivo:', imagenACargar);
 
-      const response = await fetch(`http://localhost:8000/api/productos/${editingId}/upload_image/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${editingId}/upload_image/`, {
         method: 'POST',
         credentials: 'include',
         body: formDataImg
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/api/productos/${editingId}/delete_image/?image_id=${imageId}`,
+        `${import.meta.env.VITE_API_URL}/api/productos/${editingId}/delete_image/?image_id=${imageId}`,
         {
           method: 'DELETE',
           credentials: 'include'
