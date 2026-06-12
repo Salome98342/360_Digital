@@ -151,11 +151,25 @@ SIMPLE_JWT = {
 }
 
 # ==========================
+# ==========================
 # CORS CONFIGURATION
 # ==========================
-# Orígenes locales permitidos para desarrollo
+
+# 1. ESTA ES LA LÍNEA QUE TE FALTA
+CORS_ALLOW_CREDENTIALS = True
+
+# 2. Asegúrate de permitir las cabeceras necesarias (opcional pero recomendado)
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 CORS_ALLOWED_ORIGINS = [
+    "https://360-digital.vercel.app",
     'http://localhost:5173',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
@@ -172,17 +186,15 @@ if _cors_allowed_origins:
         if not origen:
             continue
             
-        # Si la URL tiene "://", separamos el protocolo del dominio
         partes = origen.split('://')
         if len(partes) == 2:
-            # Tomamos la parte del dominio y cortamos si hay barras adicionales (ej: /admin)
             dominio_limpio = partes[1].split('/')[0]
-            # Usamos la variable dominio_limpio, NO el dominio escrito a mano
             CORS_ALLOWED_ORIGINS.append(f"{partes[0]}://{dominio_limpio}")
         else:
-            # Fallback en caso de que el formato sea diferente
             CORS_ALLOWED_ORIGINS.append(origen.rstrip('/'))
-            
+
+
+        
 # ==========================
 # COOKIES / JWT
 # ==========================
