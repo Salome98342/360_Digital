@@ -16,6 +16,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('apps.productos.urls')),
     path('api/usuarios/', include(router.urls)),
+    # Compatibilidad (por si el frontend intenta /api/administrador)
+    path('api/administrador/', include(router.urls)),
+
 ]
 
 if settings.DEBUG:
