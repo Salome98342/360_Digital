@@ -255,6 +255,7 @@ export default function AdminDashboard() {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
               },
               credentials: 'include',
               body: JSON.stringify({
