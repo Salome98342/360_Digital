@@ -31,31 +31,34 @@ export default function AdminDashboard() {
 
   const verificarAutenticacion = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/check_auth/`, {
+    const authCheck = await fetch(`https://three60-digital.onrender.com/api/usuarios/autenticacion/check_auth/`, {
+        method: `GET`,
+        credentials: `include`
+    });
 
-        method: 'GET',
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        navigate('/admin/login');
+    if (!authCheck.ok) {
+        e(`/admin/login`);
         return;
-      }
-
-      // Obtener datos del admin
-      const meResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/me/`, {
-        method: 'GET',
-        credentials: 'include'
-      });
-
-      if (meResponse.ok) {
-        const data = await meResponse.json();
-        setAdmin(data);
-      }
-    } catch (err) {
-      console.error('Error:', err);
-      navigate('/admin/login');
     }
+
+    const responseMe = await fetch(`https://three60-digital.onrender.com/api/usuarios/autenticacion/me/`, {
+        method: `GET`,
+        credentials: `include`
+    });
+
+    if (responseMe.status === 401) {
+        // Handle unauthorized specifically: session might have expired between requests
+        e(`/admin/login`);
+        return;
+    }
+
+    if (responseMe.ok) {
+        i(await responseMe.json());
+    }
+} catch (err) {
+    console.error(`Error:`, err);
+    e(`/admin/login`);
+}
   };
 
   const cargarProductos = async () => {
