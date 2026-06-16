@@ -1,602 +1,215 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styles from './AdminDashboard.module.css';
+import { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import Header from '../components/Header/Header.jsx';
+import styles from './Catalog.module.css';
+import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
+import ProductCard from '../components/ProductCard/ProductCard';
 
-// 1. Refactorizado a for-of (S4138)
-const getCookie = (name) => {
-  if (!document.cookie) return null;
-  const cookies = document.cookie.split(';');
-  for (const cookieStr of cookies) {
-    const cookie = cookieStr.trim();
-    if (cookie.startsWith(`${name}=`)) {
-      return decodeURIComponent(cookie.substring(name.length + 1));
-    }
-  }
-  return null;
+const imageMap = {
+  1: 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=400&h=300&fit=crop',
+  2: 'https://images.unsplash.com/photo-1460925895917-adf4e565f900?w=400&h=300&fit=crop',
+  3: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop',
+  4: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+  5: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop',
+  6: 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=400&h=300&fit=crop',
+  7: 'https://images.unsplash.com/photo-1460925895917-adf4e565f900?w=400&h=300&fit=crop',
+  8: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop'
 };
 
-// 3. Reducción de Complejidad Cognitiva (S3776): Extraemos la lógica de especificaciones
-const procesarEspecificaciones = async (productoId, especsAEliminar, especsActuales) => {
-  // Eliminar las que se quitaron
-  if (especsAEliminar.length > 0) {
-    for (const especId of especsAEliminar) {
-      try {
-        await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/${especId}/`, {
-          method: 'DELETE',
-          headers: { 'X-CSRFToken': getCookie('csrftoken') },
-          credentials: 'include'
-        });
-      } catch (err) {
-        console.error('Error eliminando especificación:', err);
-      }
-    }
-  }
-
-  // Guardar las nuevas
-  const nuevasEspecificaciones = especsActuales.filter(esp => esp.nombre && esp.valor && !esp.id);
-  if (nuevasEspecificaciones.length > 0) {
-    for (const esp of nuevasEspecificaciones) {
-      try {
-        await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            id_producto: productoId,
-            nombre: esp.nombre,
-            valor: esp.valor
-          })
-        });
-      } catch (err) {
-        console.error('Error creando especificación:', err);
-      }
-    }
-  }
-};
-
-export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const [productos, setProductos] = useState([]);
-  const [admin, setAdmin] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [deletedEspecificaciones, setDeletedEspecificaciones] = useState([]);
-  
-  const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    precio: '',
-    categoria: 'Tarjetas',
-    especificaciones: []
+export default function Catalog() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeFilters, setActiveFilters] = useState({
+    categories: [],
+    price: 250000,
+    rating: []
   });
-  
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [galeriaImages, setGaleriaImages] = useState([]);
-  const [imagenACargar, setImagenACargar] = useState(null);
+  const [sortBy, setSortBy] = useState('relevance');
+  const [allProducts, setAllProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const verificarAutenticacion = useCallback(async () => {
-    try {
-      const authCheck = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/check_auth/`,
-        { method: 'GET', credentials: 'include' }
-      );
-
-      if (!authCheck.ok) {
-        navigate('/admin/login');
-        return;
-      }
-
-      const responseMe = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/me/`,
-        { method: 'GET', credentials: 'include' }
-      );
-
-      if (responseMe.status === 401) {
-        navigate('/admin/login');
-        return;
-      }
-
-      if (responseMe.ok) {
-        const data = await responseMe.json();
-        setAdmin(data);
-      }
-    } catch (err) {
-      console.error('Error de autenticación:', err);
-      navigate('/admin/login');
-    }
-  }, [navigate]);
-
-  const cargarProductos = useCallback(async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/`, {
-        credentials: 'include'
-      });
-
-      if (response.ok) {
+  // Cargar productos desde la API
+  useEffect(() => {
+        const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/`);
         const data = await response.json();
-        setProductos(data.results || data);
+        
+        console.log('API Response:', data);
+        console.log('Results array:', data.results);
+        
+        // Mapear datos de la API al formato esperado por el componente
+        const mappedProducts = data.results.map(product => ({
+          id: product.id,
+          title: product.nombre,
+          category: product.categoria,
+          price: parseFloat(product.precio),
+          rating: 4.5, // Rating por defecto, se actualiza en ProductDetail
+          image: product.galeria?.[0]?.url_imagen || imageMap[product.id] || 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+          description: product.descripcion
+        }));
+        
+        console.log('Mapped products:', mappedProducts);
+        setAllProducts(mappedProducts);
+      } catch (error) {
+        console.error('Error al cargar productos:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error al cargar productos:', err);
-    } finally {
-      setLoading(false);
-    }
+    };
+
+    fetchProducts();
   }, []);
 
-  useEffect(() => {
-    verificarAutenticacion();
-    cargarProductos();
-  }, [verificarAutenticacion, cargarProductos]);
+  // Filtrar y buscar productos
+  const filteredProducts = useMemo(() => {
+    let results = allProducts;
 
-  const handleLogout = async () => {
-    try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/logout/`, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        credentials: 'include'
-      });
-      navigate('/admin/login');
-    } catch (err) {
-      console.error('Error al cerrar sesión:', err);
-    }
-  };
-
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleEspecificacionChange = (index, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      especificaciones: prev.especificaciones.map((esp, i) =>
-        i === index ? { ...esp, [field]: value } : esp
-      )
-    }));
-  };
-
-  const addEspecificacion = () => {
-    setFormData(prev => ({
-      ...prev,
-      especificaciones: [...prev.especificaciones, { nombre: '', valor: '' }]
-    }));
-  };
-
-  const removeEspecificacion = (index) => {
-    const especificacion = formData.especificaciones[index];
-    if (especificacion.id) {
-      setDeletedEspecificaciones(prev => [...prev, especificacion.id]);
-    }
-    setFormData(prev => ({
-      ...prev,
-      especificaciones: prev.especificaciones.filter((_, i) => i !== index)
-    }));
-  };
-
-  const resetForm = () => {
-    setFormData({
-      nombre: '',
-      descripcion: '',
-      precio: '',
-      categoria: 'Tarjetas',
-      especificaciones: []
-    });
-    setGaleriaImages([]);
-    setImagenACargar(null);
-    setEditingId(null);
-    setDeletedEspecificaciones([]);
-  };
-
-  const handleEdit = (producto) => {
-    setEditingId(producto.id);
-    setFormData({
-      nombre: producto.nombre,
-      descripcion: producto.descripcion || '',
-      precio: producto.precio,
-      categoria: producto.categoria,
-      especificaciones: producto.especificaciones || []
-    });
-    setGaleriaImages(producto.galeria || []);
-    setDeletedEspecificaciones([]);
-    setShowForm(true);
-    setError('');
-    setSuccess('');
-  };
-
-  const handleDelete = async (id) => {
-    // 2. Uso de globalThis (S7764)
-    if (!globalThis.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${id}/`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        setError('Error al eliminar el producto');
-        return;
-      }
-
-      setSuccess('Producto eliminado exitosamente');
-      cargarProductos();
-    } catch (err) {
-      setError('Error: ' + err.message);
-      console.error('Error al eliminar:', err);
-    }
-  };
-
-  // Función ahora mucho más limpia
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    try {
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId 
-        ? `${import.meta.env.VITE_API_URL}/api/productos/${editingId}/`
-        : `${import.meta.env.VITE_API_URL}/api/productos/`;
-
-      const requestData = {
-        nombre: formData.nombre,
-        descripcion: formData.descripcion,
-        // 4. Uso de Number.parseFloat (S7773)
-        precio: Number.parseFloat(formData.precio),
-        categoria_nombre: formData.categoria
-      };
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken')
-        },
-        credentials: 'include',
-        body: JSON.stringify(requestData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(`Error: ${JSON.stringify(errorData)}`);
-        return;
-      }
-
-      const productoData = await response.json();
-
-      // Procesamos las especificaciones en la función externa para bajar complejidad
-      await procesarEspecificaciones(productoData.id, deletedEspecificaciones, formData.especificaciones);
-
-      setSuccess(editingId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente');
-      resetForm();
-      setShowForm(false);
-      cargarProductos();
-    } catch (err) {
-      setError('Error: ' + err.message);
-      console.error('Error en submit:', err);
-    }
-  };
-
-  const handleUploadImage = async () => {
-    if (!imagenACargar || !editingId) {
-      setError('Selecciona una imagen primero');
-      return;
-    }
-
-    try {
-      const formDataImg = new FormData();
-      formDataImg.append('imagen', imagenACargar);
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${editingId}/upload_image/`, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        credentials: 'include',
-        body: formDataImg
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        setError(`Error al subir imagen: ${JSON.stringify(responseData)}`);
-        return;
-      }
-
-      const nuevaImagen = responseData;
-      setGaleriaImages([...galeriaImages, nuevaImagen]);
-      setImagenACargar(null);
-      setSuccess('Imagen subida exitosamente');
-      
-      const fileInput = document.getElementById('imagenUploadInput');
-      if (fileInput) fileInput.value = '';
-    } catch (err) {
-      console.error('Error al subir imagen:', err);
-      setError('Error al subir imagen: ' + err.message);
-    }
-  };
-
-  const handleDeleteImage = async (imageId) => {
-    // 2. Uso de globalThis (S7764)
-    if (!globalThis.confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/productos/${editingId}/delete_image/?image_id=${imageId}`,
-        {
-          method: 'DELETE',
-          headers: { 'X-CSRFToken': getCookie('csrftoken') },
-          credentials: 'include'
-        }
+    // Búsqueda por término
+    if (searchTerm) {
+      results = results.filter(p =>
+        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchTerm.toLowerCase())
       );
+    }
 
-      if (!response.ok) {
-        setError('Error al eliminar la imagen');
-        return;
-      }
+    // Filtro por categoría
+    if (activeFilters.categories.length > 0 && !activeFilters.categories.includes('Todas')) {
+      results = results.filter(p => activeFilters.categories.includes(p.category));
+    }
 
-      setGaleriaImages(galeriaImages.filter(img => img.id !== imageId));
-      setSuccess('Imagen eliminada exitosamente');
-    } catch (err) {
-      setError('Error al eliminar imagen: ' + err.message);
-      console.error('Error:', err);
+    // Filtro por precio
+    results = results.filter(p => p.price <= activeFilters.price);
+
+    // Filtro por rating
+    if (activeFilters.rating.length > 0) {
+      results = results.filter(p =>
+        activeFilters.rating.some(r => p.rating >= r)
+      );
+    }
+
+    // Ordenar
+    switch (sortBy) {
+      case 'price-low':
+        results.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        results.sort((a, b) => b.price - a.price);
+        break;
+      case 'rating':
+        results.sort((a, b) => b.rating - a.rating);
+        break;
+      case 'newest':
+        results.reverse();
+        break;
+      default:
+        break;
+    }
+
+    return results;
+  }, [searchTerm, activeFilters, sortBy, allProducts]);
+
+  const handleFilterChange = (filterType, value) => {
+    if (filterType === 'clear') {
+      setActiveFilters({ categories: [], price: 250000, rating: [] });
+    } else if (filterType === 'categories') {
+      setActiveFilters(prev => ({
+        ...prev,
+        categories: prev.categories.includes(value)
+          ? prev.categories.filter(c => c !== value)
+          : [...prev.categories, value]
+      }));
+    } else if (filterType === 'price') {
+      setActiveFilters(prev => ({ ...prev, price: parseInt(value) }));
+    } else if (filterType === 'rating') {
+      setActiveFilters(prev => ({
+        ...prev,
+        rating: prev.rating.includes(value)
+          ? prev.rating.filter(r => r !== value)
+          : [...prev.rating, value]
+      }));
     }
   };
-
-  if (loading) {
-    return <div className={styles.loading}>Cargando...</div>;
-  }
 
   return (
-    <div className={styles.dashboard}>
+    <div className={styles.catalogContainer}>
+      <Header />
+      
+      {/* Header del Catálogo */}
       <div className={styles.header}>
         <div className={styles.headerContent}>
-          <div className={styles.logoMark} aria-hidden="true" />
-          <div>
-            <span className={styles.kicker}>360 Digital</span>
-            <h1>Panel administrador</h1>
-          </div>
-          {admin && <p>Bienvenido, {admin.usuario}</p>}
+          <h1>Catálogo</h1>
+          <p>Explora nuestros trabajos en diseño gráfico, identidad corporativa y materiales de marketing</p>
         </div>
-        <button type="button" onClick={handleLogout} className={styles.logoutBtn}>
-          Cerrar Sesión
-        </button>
       </div>
 
-      <div className={styles.container}>
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2>Productos</h2>
-            <button 
-              type="button"
-              className={styles.addBtn}
-              onClick={() => {
-                if (editingId) {
-                  resetForm();
-                } else {
-                  setShowForm(!showForm);
-                }
-              }}
-            >
-              {showForm || editingId ? 'Cancelar' : '+ Nuevo Producto'}
-            </button>
-          </div>
+      {/* Search y Sort */}
+      <div className={styles.topBar}>
+        <div className={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="Buscar servicios..."
+            className={styles.searchInput}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <span className={styles.searchIcon}>🔍</span>
+        </div>
 
-          {error && <div className={styles.error}>{error}</div>}
-          {success && <div className={styles.success}>{success}</div>}
+        <div className={styles.sortContainer}>
+          <label>Ordenar por:</label>
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+            className={styles.sortSelect}
+          >
+            <option value="relevance">Relevancia</option>
+            <option value="price-low">Menor Precio</option>
+            <option value="price-high">Mayor Precio</option>
+            <option value="rating">Mejor Rating</option>
+            <option value="newest">Más Recientes</option>
+          </select>
+        </div>
+      </div>
 
-          {(showForm || editingId) && (
-            <form className={styles.form} onSubmit={handleSubmit}>
-              <div className={styles.formGrid}>
-                
-                {/* 5. Etiquetas con htmlFor apuntando a ids (S6853) */}
-                <div className={styles.formGroup}>
-                  <label htmlFor="nombreProducto">Nombre</label>
-                  <input
-                    id="nombreProducto"
-                    type="text"
-                    name="nombre"
-                    value={formData.nombre}
-                    onChange={handleFormChange}
-                    required
-                    placeholder="Nombre del producto"
-                  />
-                </div>
+      {/* Main Content */}
+      <div className={styles.mainContent}>
+        {/* Sidebar */}
+        <FilterSidebar 
+          onFilterChange={handleFilterChange}
+          activeFilters={activeFilters}
+        />
 
-                <div className={styles.formGroup}>
-                  <label htmlFor="precioProducto">Precio</label>
-                  <input
-                    id="precioProducto"
-                    type="number"
-                    name="precio"
-                    value={formData.precio}
-                    onChange={handleFormChange}
-                    required
-                    placeholder="0"
-                    step="0.01"
-                  />
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label htmlFor="categoriaProducto">Categoría</label>
-                  <select
-                    id="categoriaProducto"
-                    name="categoria"
-                    value={formData.categoria}
-                    onChange={handleFormChange}
-                  >
-                    <option value="Tarjetas">Tarjetas</option>
-                    <option value="Volantes">Volantes</option>
-                    <option value="Cuadros">Cuadros</option>
-                    <option value="Empaques">Empaques</option>
-                    <option value="Identidad">Identidad</option>
-                    <option value="Logos">Logos</option>
-                    <option value="Pendones">Pendones</option>
-                    <option value="Posters">Posters</option>
-                    <option value="Avisos Luminosos">Avisos Luminosos</option>
-                  </select>
-                </div>
-
-                <div className={styles.formGroupFull}>
-                  <label htmlFor="descripcionProducto">Descripción</label>
-                  <textarea
-                    id="descripcionProducto"
-                    name="descripcion"
-                    value={formData.descripcion}
-                    onChange={handleFormChange}
-                    placeholder="Descripción del producto"
-                    rows="3"
-                  />
-                </div>
-
-                <div className={styles.formGroupFull}>
-                  {/* Etiqueta conectada al botón de agregar para evitar advertencia de a11y */}
-                  <label htmlFor="btnAgregarEspec">Especificaciones</label>
-                  <div className={styles.especificaciones}>
-                    {formData.especificaciones.map((esp, index) => (
-                      <div key={esp.id || `espec-${index}`} className={styles.especRow}>
-                        <input
-                          type="text"
-                          aria-label={`Nombre de la especificación ${index + 1}`}
-                          placeholder="Ej: Tamaño"
-                          value={esp.nombre}
-                          onChange={(e) => handleEspecificacionChange(index, 'nombre', e.target.value)}
-                          className={styles.especNombre}
-                        />
-                        <input
-                          type="text"
-                          aria-label={`Valor de la especificación ${index + 1}`}
-                          placeholder="Ej: A4"
-                          value={esp.valor}
-                          onChange={(e) => handleEspecificacionChange(index, 'valor', e.target.value)}
-                          className={styles.especValor}
-                        />
-                        <button
-                          type="button"
-                          aria-label={`Eliminar especificación ${index + 1}`}
-                          onClick={() => removeEspecificacion(index)}
-                          className={styles.removeBtn}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    id="btnAgregarEspec"
-                    type="button"
-                    onClick={addEspecificacion}
-                    className={styles.addEspecBtn}
-                  >
-                    + Agregar especificación
-                  </button>
-                </div>
-
-                {editingId && (
-                  <div className={styles.formGroupFull}>
-                    <label htmlFor="imagenUploadInput">Galería de Imágenes</label>
-                    <div className={styles.galeriaUpload}>
-                      <input
-                        id="imagenUploadInput"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setImagenACargar(e.target.files[0])}
-                        className={styles.fileInput}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleUploadImage}
-                        className={styles.uploadBtn}
-                        disabled={!imagenACargar}
-                      >
-                        Subir imagen
-                      </button>
-                    </div>
-
-                    {galeriaImages.length > 0 && (
-                      <div className={styles.galeriaGrid}>
-                        {galeriaImages.map((img) => (
-                          <div key={img.id} className={styles.galeriaItem}>
-                            <img 
-                              src={img.url_imagen} 
-                              alt={img.descripcion || 'Imagen del producto'}
-                              className={styles.galeriaImage}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteImage(img.id)}
-                              className={styles.deleteImageBtn}
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+        {/* Productos Grid */}
+        <div className={styles.productsSection}>
+          {loading ? (
+            <div className={styles.loading}>
+              <p>Cargando productos...</p>
+            </div>
+          ) : (
+            <>
+              <div className={styles.resultsInfo}>
+                <span>Mostrando {filteredProducts.length} de {allProducts.length} resultados</span>
               </div>
 
-              <button type="submit" className={styles.submitBtn}>
-                {editingId ? 'Actualizar Producto' : 'Crear Producto'}
-              </button>
-            </form>
-          )}
-
-          <div className={styles.productsList}>
-            {productos.length === 0 ? (
-              <p className={styles.empty}>No hay productos creados</p>
-            ) : (
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Precio</th>
-                    <th>Categoría</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {productos.map(producto => (
-                    <tr key={producto.id}>
-                      <td>{producto.id}</td>
-                      <td>{producto.nombre}</td>
-                      {/* 4. Uso de Number.parseFloat (S7773) */}
-                      <td>${Number.parseFloat(producto.precio).toLocaleString('es-CO')}</td>
-                      <td>{producto.categoria}</td>
-                      <td>
-                        <button
-                          type="button"
-                          className={styles.editBtn}
-                          onClick={() => handleEdit(producto)}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          className={styles.deleteBtn}
-                          onClick={() => handleDelete(producto.id)}
-                        >
-                          Eliminar
-                        </button>
-                      </td>
-                    </tr>
+              {filteredProducts.length > 0 ? (
+                <div className={styles.productsGrid}>
+                  {filteredProducts.map(product => (
+                    <Link key={product.id} to={`/producto/${product.id}`} className={styles.productCardLink}>
+                      <ProductCard 
+                        product={product}
+                      />
+                    </Link>
                   ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                </div>
+              ) : (
+                <div className={styles.noResults}>
+                  <h3>No se encontraron resultados</h3>
+                  <p>Intenta ajustar los filtros o términos de búsqueda</p>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

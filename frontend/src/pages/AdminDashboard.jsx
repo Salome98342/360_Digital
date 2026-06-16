@@ -1,6 +1,61 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './AdminDashboard.module.css';
+
+// 1. Refactorizado a for-of (S4138)
+const getCookie = (name) => {
+  if (!document.cookie) return null;
+  const cookies = document.cookie.split(';');
+  for (const cookieStr of cookies) {
+    const cookie = cookieStr.trim();
+    if (cookie.startsWith(`${name}=`)) {
+      return decodeURIComponent(cookie.substring(name.length + 1));
+    }
+  }
+  return null;
+};
+
+// 3. Reducción de Complejidad Cognitiva (S3776): Extraemos la lógica de especificaciones
+const procesarEspecificaciones = async (productoId, especsAEliminar, especsActuales) => {
+  // Eliminar las que se quitaron
+  if (especsAEliminar.length > 0) {
+    for (const especId of especsAEliminar) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/${especId}/`, {
+          method: 'DELETE',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') },
+          credentials: 'include'
+        });
+      } catch (err) {
+        console.error('Error eliminando especificación:', err);
+      }
+    }
+  }
+
+  // Guardar las nuevas
+  const nuevasEspecificaciones = especsActuales.filter(esp => esp.nombre && esp.valor && !esp.id);
+  if (nuevasEspecificaciones.length > 0) {
+    for (const esp of nuevasEspecificaciones) {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            id_producto: productoId,
+            nombre: esp.nombre,
+            valor: esp.valor
+          })
+        });
+      } catch (err) {
+        console.error('Error creando especificación:', err);
+      }
+    }
+  }
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -24,19 +79,11 @@ export default function AdminDashboard() {
   const [galeriaImages, setGaleriaImages] = useState([]);
   const [imagenACargar, setImagenACargar] = useState(null);
 
-  useEffect(() => {
-    verificarAutenticacion();
-    cargarProductos();
-  }, []);
-
-  const verificarAutenticacion = async () => {
+  const verificarAutenticacion = useCallback(async () => {
     try {
       const authCheck = await fetch(
         `${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/check_auth/`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
+        { method: 'GET', credentials: 'include' }
       );
 
       if (!authCheck.ok) {
@@ -46,10 +93,7 @@ export default function AdminDashboard() {
 
       const responseMe = await fetch(
         `${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/me/`,
-        {
-          method: 'GET',
-          credentials: 'include',
-        }
+        { method: 'GET', credentials: 'include' }
       );
 
       if (responseMe.status === 401) {
@@ -62,12 +106,12 @@ export default function AdminDashboard() {
         setAdmin(data);
       }
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error de autenticación:', err);
       navigate('/admin/login');
     }
-  };
+  }, [navigate]);
 
-  const cargarProductos = async () => {
+  const cargarProductos = useCallback(async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/`, {
         credentials: 'include'
@@ -82,23 +126,12 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Función auxiliar para obtener el token CSRF de las cookies
-  const getCookie = (name) => {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  };
+  useEffect(() => {
+    verificarAutenticacion();
+    cargarProductos();
+  }, [verificarAutenticacion, cargarProductos]);
 
   const handleLogout = async () => {
     try {
@@ -109,7 +142,7 @@ export default function AdminDashboard() {
       });
       navigate('/admin/login');
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error al cerrar sesión:', err);
     }
   };
 
@@ -139,7 +172,6 @@ export default function AdminDashboard() {
 
   const removeEspecificacion = (index) => {
     const especificacion = formData.especificaciones[index];
-    // Si la especificación tiene id, significa que existe en el backend y debe ser eliminada
     if (especificacion.id) {
       setDeletedEspecificaciones(prev => [...prev, especificacion.id]);
     }
@@ -180,7 +212,8 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+    // 2. Uso de globalThis (S7764)
+    if (!globalThis.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       return;
     }
 
@@ -199,10 +232,11 @@ export default function AdminDashboard() {
       cargarProductos();
     } catch (err) {
       setError('Error: ' + err.message);
-      console.error('Error:', err);
+      console.error('Error al eliminar:', err);
     }
   };
 
+  // Función ahora mucho más limpia
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -217,7 +251,8 @@ export default function AdminDashboard() {
       const requestData = {
         nombre: formData.nombre,
         descripcion: formData.descripcion,
-        precio: parseFloat(formData.precio),
+        // 4. Uso de Number.parseFloat (S7773)
+        precio: Number.parseFloat(formData.precio),
         categoria_nombre: formData.categoria
       };
 
@@ -234,48 +269,13 @@ export default function AdminDashboard() {
       if (!response.ok) {
         const errorData = await response.json();
         setError(`Error: ${JSON.stringify(errorData)}`);
-        console.error('Error response:', errorData);
         return;
       }
 
       const productoData = await response.json();
 
-      // Eliminar especificaciones que fueron removidas
-      if (deletedEspecificaciones.length > 0) {
-        for (const especId of deletedEspecificaciones) {
-          try {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/${especId}/`, {
-              method: 'DELETE',
-              headers: { 'X-CSRFToken': getCookie('csrftoken') },
-              credentials: 'include'
-            });
-          } catch (err) {
-            console.error('Error eliminando especificación:', err);
-          }
-        }
-      }
-
-      // Guardar especificaciones nuevas
-      if (formData.especificaciones.length > 0) {
-        for (const esp of formData.especificaciones) {
-          // Solo crear especificaciones nuevas (sin id)
-          if (esp.nombre && esp.valor && !esp.id) {
-            await fetch(`${import.meta.env.VITE_API_URL}/api/especificaciones/`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-              },
-              credentials: 'include',
-              body: JSON.stringify({
-                id_producto: productoData.id,
-                nombre: esp.nombre,
-                valor: esp.valor
-              })
-            });
-          }
-        }
-      }
+      // Procesamos las especificaciones en la función externa para bajar complejidad
+      await procesarEspecificaciones(productoData.id, deletedEspecificaciones, formData.especificaciones);
 
       setSuccess(editingId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente');
       resetForm();
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
       cargarProductos();
     } catch (err) {
       setError('Error: ' + err.message);
-      console.error('Error:', err);
+      console.error('Error en submit:', err);
     }
   };
 
@@ -297,9 +297,6 @@ export default function AdminDashboard() {
       const formDataImg = new FormData();
       formDataImg.append('imagen', imagenACargar);
 
-      console.log('Subiendo imagen para producto:', editingId);
-      console.log('Archivo:', imagenACargar);
-
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${editingId}/upload_image/`, {
         method: 'POST',
         headers: { 'X-CSRFToken': getCookie('csrftoken') },
@@ -307,9 +304,7 @@ export default function AdminDashboard() {
         body: formDataImg
       });
 
-      console.log('Response status:', response.status);
       const responseData = await response.json();
-      console.log('Response data:', responseData);
 
       if (!response.ok) {
         setError(`Error al subir imagen: ${JSON.stringify(responseData)}`);
@@ -321,17 +316,17 @@ export default function AdminDashboard() {
       setImagenACargar(null);
       setSuccess('Imagen subida exitosamente');
       
-      // Limpiar el input file
-      const fileInput = document.querySelector('input[type="file"]');
+      const fileInput = document.getElementById('imagenUploadInput');
       if (fileInput) fileInput.value = '';
     } catch (err) {
-      console.error('Error catch:', err);
+      console.error('Error al subir imagen:', err);
       setError('Error al subir imagen: ' + err.message);
     }
   };
 
   const handleDeleteImage = async (imageId) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
+    // 2. Uso de globalThis (S7764)
+    if (!globalThis.confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
       return;
     }
 
@@ -364,7 +359,6 @@ export default function AdminDashboard() {
 
   return (
     <div className={styles.dashboard}>
-      {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.logoMark} aria-hidden="true" />
@@ -374,17 +368,17 @@ export default function AdminDashboard() {
           </div>
           {admin && <p>Bienvenido, {admin.usuario}</p>}
         </div>
-        <button onClick={handleLogout} className={styles.logoutBtn}>
+        <button type="button" onClick={handleLogout} className={styles.logoutBtn}>
           Cerrar Sesión
         </button>
       </div>
 
-      {/* Main Content */}
       <div className={styles.container}>
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2>Productos</h2>
             <button 
+              type="button"
               className={styles.addBtn}
               onClick={() => {
                 if (editingId) {
@@ -401,13 +395,15 @@ export default function AdminDashboard() {
           {error && <div className={styles.error}>{error}</div>}
           {success && <div className={styles.success}>{success}</div>}
 
-          {/* Formulario */}
           {(showForm || editingId) && (
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formGrid}>
+                
+                {/* 5. Etiquetas con htmlFor apuntando a ids (S6853) */}
                 <div className={styles.formGroup}>
-                  <label>Nombre</label>
+                  <label htmlFor="nombreProducto">Nombre</label>
                   <input
+                    id="nombreProducto"
                     type="text"
                     name="nombre"
                     value={formData.nombre}
@@ -418,8 +414,9 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Precio</label>
+                  <label htmlFor="precioProducto">Precio</label>
                   <input
+                    id="precioProducto"
                     type="number"
                     name="precio"
                     value={formData.precio}
@@ -431,8 +428,9 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>Categoría</label>
+                  <label htmlFor="categoriaProducto">Categoría</label>
                   <select
+                    id="categoriaProducto"
                     name="categoria"
                     value={formData.categoria}
                     onChange={handleFormChange}
@@ -450,24 +448,26 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className={styles.formGroupFull}>
-                  <label>Descripción</label>
+                  <label htmlFor="descripcionProducto">Descripción</label>
                   <textarea
+                    id="descripcionProducto"
                     name="descripcion"
                     value={formData.descripcion}
                     onChange={handleFormChange}
                     placeholder="Descripción del producto"
                     rows="3"
-                  ></textarea>
+                  />
                 </div>
 
-                {/* Especificaciones */}
                 <div className={styles.formGroupFull}>
-                  <label>Especificaciones</label>
+                  {/* Etiqueta conectada al botón de agregar para evitar advertencia de a11y */}
+                  <label htmlFor="btnAgregarEspec">Especificaciones</label>
                   <div className={styles.especificaciones}>
                     {formData.especificaciones.map((esp, index) => (
-                      <div key={index} className={styles.especRow}>
+                      <div key={esp.id || `espec-${index}`} className={styles.especRow}>
                         <input
                           type="text"
+                          aria-label={`Nombre de la especificación ${index + 1}`}
                           placeholder="Ej: Tamaño"
                           value={esp.nombre}
                           onChange={(e) => handleEspecificacionChange(index, 'nombre', e.target.value)}
@@ -475,6 +475,7 @@ export default function AdminDashboard() {
                         />
                         <input
                           type="text"
+                          aria-label={`Valor de la especificación ${index + 1}`}
                           placeholder="Ej: A4"
                           value={esp.valor}
                           onChange={(e) => handleEspecificacionChange(index, 'valor', e.target.value)}
@@ -482,6 +483,7 @@ export default function AdminDashboard() {
                         />
                         <button
                           type="button"
+                          aria-label={`Eliminar especificación ${index + 1}`}
                           onClick={() => removeEspecificacion(index)}
                           className={styles.removeBtn}
                         >
@@ -491,6 +493,7 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                   <button
+                    id="btnAgregarEspec"
                     type="button"
                     onClick={addEspecificacion}
                     className={styles.addEspecBtn}
@@ -499,12 +502,12 @@ export default function AdminDashboard() {
                   </button>
                 </div>
 
-                {/* Galería de Imágenes - Solo cuando edita */}
                 {editingId && (
                   <div className={styles.formGroupFull}>
-                    <label>Galería de Imágenes</label>
+                    <label htmlFor="imagenUploadInput">Galería de Imágenes</label>
                     <div className={styles.galeriaUpload}>
                       <input
+                        id="imagenUploadInput"
                         type="file"
                         accept="image/*"
                         onChange={(e) => setImagenACargar(e.target.files[0])}
@@ -520,7 +523,6 @@ export default function AdminDashboard() {
                       </button>
                     </div>
 
-                    {/* Galería actual */}
                     {galeriaImages.length > 0 && (
                       <div className={styles.galeriaGrid}>
                         {galeriaImages.map((img) => (
@@ -551,7 +553,6 @@ export default function AdminDashboard() {
             </form>
           )}
 
-          {/* Lista de Productos */}
           <div className={styles.productsList}>
             {productos.length === 0 ? (
               <p className={styles.empty}>No hay productos creados</p>
@@ -571,16 +572,19 @@ export default function AdminDashboard() {
                     <tr key={producto.id}>
                       <td>{producto.id}</td>
                       <td>{producto.nombre}</td>
-                      <td>${parseFloat(producto.precio).toLocaleString('es-CO')}</td>
+                      {/* 4. Uso de Number.parseFloat (S7773) */}
+                      <td>${Number.parseFloat(producto.precio).toLocaleString('es-CO')}</td>
                       <td>{producto.categoria}</td>
                       <td>
                         <button
+                          type="button"
                           className={styles.editBtn}
                           onClick={() => handleEdit(producto)}
                         >
                           Editar
                         </button>
                         <button
+                          type="button"
                           className={styles.deleteBtn}
                           onClick={() => handleDelete(producto.id)}
                         >
