@@ -13,14 +13,30 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Configuración de Supabase Storage ---
+import os
+
 AWS_ACCESS_KEY_ID = os.getenv('SUPABASE_ACCESS_KEY')
 AWS_SECRET_ACCESS_KEY = os.getenv('SUPABASE_SECRET_KEY')
 
 AWS_STORAGE_BUCKET_NAME = 'Images'
 AWS_S3_ENDPOINT_URL = 'https://fvyjyfyzssgzbeztnpnn.supabase.co/storage/v1/s3'
-AWS_S3_REGION_NAME = 'us-east-1' 
+AWS_S3_REGION_NAME = 'us-east-1'
 
-# Configuración de almacenamiento (Django 4.2+)
+# --- NUEVOS AJUSTES REQUERIDOS ---
+
+# 1. Desactiva las URLs firmadas (querystring). 
+# Las imágenes públicas no necesitan firmas.
+AWS_QUERYSTRING_AUTH = False 
+
+# 2. Usa el CDN nativo de Supabase para servir los archivos, no el S3.
+# Nota: No incluyas 'https://' aquí, django-storages lo añade automáticamente.
+AWS_S3_CUSTOM_DOMAIN = f"fvyjyfyzssgzbeztnpnn.supabase.co/storage/v1/object/public/{AWS_STORAGE_BUCKET_NAME}"
+
+# Opcional pero recomendado para Supabase S3
+AWS_S3_FILE_OVERWRITE = False
+
+# ---------------------------------
+
 STORAGES = {
     "default": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -29,7 +45,6 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
-
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
