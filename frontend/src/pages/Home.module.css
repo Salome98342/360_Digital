@@ -36,6 +36,8 @@
   color: #ff0000;
   font-weight: 600;
   letter-spacing: 1px;
+  letter-spacing: 0.1em;
+  letter-spacing: 0.2em;
   margin: 0;
   text-transform: uppercase;
   font-family: 'Anton', sans-serif;
