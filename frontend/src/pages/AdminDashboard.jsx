@@ -509,6 +509,7 @@ export default function AdminDashboard() {
                       <input
                         id="imagenUploadInput"
                         type="file"
+                        accept="image/*"
                         onChange={(e) => setImagenACargar(e.target.files[0])}
                         className={styles.fileInput}
                       />

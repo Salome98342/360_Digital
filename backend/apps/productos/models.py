@@ -113,7 +113,7 @@ class GaleriaProducto(models.Model):
         db_column='id_producto'
     )
     
-    url_imagen = models.FileField
+    url_imagen = models.FileField(upload_to='images/')
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
