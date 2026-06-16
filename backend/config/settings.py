@@ -7,6 +7,28 @@ from pathlib import Path
 from decouple import config
 from datetime import timedelta
 import dj_database_url
+from dotenv import load_dotenv
+
+# Carga las variables del archivo .env
+load_dotenv()
+
+# --- Configuración de Supabase Storage ---
+AWS_ACCESS_KEY_ID = os.getenv('SUPABASE_ACCESS_KEY')
+AWS_SECRET_ACCESS_KEY = os.getenv('SUPABASE_SECRET_KEY')
+
+AWS_STORAGE_BUCKET_NAME = 'Images'
+AWS_S3_ENDPOINT_URL = 'https://fvyjyfyzssgzbeztnpnn.supabase.co/storage/v1/s3'
+AWS_S3_REGION_NAME = 'us-east-1' 
+
+# Configuración de almacenamiento (Django 4.2+)
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent

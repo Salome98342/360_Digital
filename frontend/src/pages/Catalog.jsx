@@ -5,17 +5,6 @@ import styles from './Catalog.module.css';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import ProductCard from '../components/ProductCard/ProductCard';
 
-const imageMap = {
-  1: 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=400&h=300&fit=crop',
-  2: 'https://images.unsplash.com/photo-1460925895917-adf4e565f900?w=400&h=300&fit=crop',
-  3: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop',
-  4: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
-  5: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=300&fit=crop',
-  6: 'https://images.unsplash.com/photo-1611532736579-6b16e2b50449?w=400&h=300&fit=crop',
-  7: 'https://images.unsplash.com/photo-1460925895917-adf4e565f900?w=400&h=300&fit=crop',
-  8: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop'
-};
-
 export default function Catalog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
@@ -29,27 +18,24 @@ export default function Catalog() {
 
   // Cargar productos desde la API
   useEffect(() => {
-        const fetchProducts = async () => {
+    const fetchProducts = async () => {
       try {
         setLoading(true);
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/`);
         const data = await response.json();
-        
-        console.log('API Response:', data);
-        console.log('Results array:', data.results);
         
         // Mapear datos de la API al formato esperado por el componente
         const mappedProducts = data.results.map(product => ({
           id: product.id,
           title: product.nombre,
           category: product.categoria,
-          price: parseFloat(product.precio),
+          price: Number.parseFloat(product.precio),
           rating: 4.5, // Rating por defecto, se actualiza en ProductDetail
-          image: product.galeria?.[0]?.url_imagen || imageMap[product.id] || 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop',
+          // Tomamos directamente la imagen del backend. Si no hay, pasamos un string vacío.
+          image: product.galeria?.[0]?.url_imagen || '', 
           description: product.descripcion
         }));
         
-        console.log('Mapped products:', mappedProducts);
         setAllProducts(mappedProducts);
       } catch (error) {
         console.error('Error al cargar productos:', error);
@@ -88,19 +74,19 @@ export default function Catalog() {
       );
     }
 
-    // Ordenar
+    // Ordenar (hacemos una copia con [...results] para no mutar el estado original de allProducts)
     switch (sortBy) {
       case 'price-low':
-        results.sort((a, b) => a.price - b.price);
+        results = [...results].sort((a, b) => a.price - b.price);
         break;
       case 'price-high':
-        results.sort((a, b) => b.price - a.price);
+        results = [...results].sort((a, b) => b.price - a.price);
         break;
       case 'rating':
-        results.sort((a, b) => b.rating - a.rating);
+        results = [...results].sort((a, b) => b.rating - a.rating);
         break;
       case 'newest':
-        results.reverse();
+        results = [...results].reverse();
         break;
       default:
         break;
@@ -120,7 +106,8 @@ export default function Catalog() {
           : [...prev.categories, value]
       }));
     } else if (filterType === 'price') {
-      setActiveFilters(prev => ({ ...prev, price: parseInt(value) }));
+      // Uso de Number.parseInt con base 10 para cumplir con buenas prácticas
+      setActiveFilters(prev => ({ ...prev, price: Number.parseInt(value, 10) }));
     } else if (filterType === 'rating') {
       setActiveFilters(prev => ({
         ...prev,

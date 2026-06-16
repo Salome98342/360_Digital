@@ -42,6 +42,9 @@ class GaleriaProductoSerializer(serializers.ModelSerializer):
     def get_url_imagen(self, obj):
         if not obj.url_imagen:
             return None
+        image_name = str(obj.url_imagen)
+        if image_name.startswith(('http://', 'https://')):
+            return image_name
 
         image_name = str(obj.url_imagen)
         if image_name.startswith(('http://', 'https://')):
