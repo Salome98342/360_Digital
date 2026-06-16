@@ -53,7 +53,8 @@ export default function ProductDetail() {
   // Cargar favoritos del localStorage al montar el componente
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    setIsFavorite(favorites.includes(parseInt(id)));
+    // CORRECCIÓN: Uso de Number.parseInt
+    setIsFavorite(favorites.includes(Number.parseInt(id, 10)));
   }, [id]);
 
   // Manejar cambios en el formulario de reseña
@@ -61,7 +62,8 @@ export default function ProductDetail() {
     const { name, value } = e.target;
     setReviewForm(prev => ({
       ...prev,
-      [name]: name === 'puntuacion' ? parseInt(value) : value
+      // CORRECCIÓN: Uso de Number.parseInt
+      [name]: name === 'puntuacion' ? Number.parseInt(value, 10) : value
     }));
   };
 
@@ -77,14 +79,14 @@ export default function ProductDetail() {
     setIsSubmitting(true);
 
     try {
-      // Hacer POST al backend
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${id}/resenas/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id_producto: parseInt(id),
+          // CORRECCIÓN: Uso de Number.parseInt
+          id_producto: Number.parseInt(id, 10),
           nombre_cliente: reviewForm.nombre_cliente,
           puntuacion: reviewForm.puntuacion,
           comentario: reviewForm.comentario
@@ -116,12 +118,12 @@ export default function ProductDetail() {
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     
     if (isFavorite) {
-      // Quitar de favoritos
-      const updated = favorites.filter(fav => fav !== parseInt(id));
+      // CORRECCIÓN: Uso de Number.parseInt
+      const updated = favorites.filter(fav => fav !== Number.parseInt(id, 10));
       localStorage.setItem('favorites', JSON.stringify(updated));
     } else {
-      // Agregar a favoritos
-      favorites.push(parseInt(id));
+      // CORRECCIÓN: Uso de Number.parseInt
+      favorites.push(Number.parseInt(id, 10));
       localStorage.setItem('favorites', JSON.stringify(favorites));
     }
     
@@ -172,11 +174,12 @@ export default function ProductDetail() {
             <img src={product.galeria?.[0]?.url_imagen || 'https://via.placeholder.com/800x600'} alt={product.nombre} />
           </div>
           <div className={styles.thumbnails}>
-            {product.galeria?.map((img, idx) => (
+            {/* CORRECCIÓN: Uso de un key único en lugar del index */}
+            {product.galeria?.map((img) => (
               <img
-                key={idx}
+                key={img.id || img.url_imagen}
                 src={img.url_imagen}
-                alt={`Vista ${idx + 1}`}
+                alt={img.descripcion || 'Vista miniatura'}
                 className={styles.thumbnail}
               />
             ))}
@@ -185,29 +188,21 @@ export default function ProductDetail() {
 
         {/* Right - Info */}
         <div className={styles.rightColumn}>
-          {/* Category */}
           <p className={styles.category}>{product.categoria}</p>
-
-          {/* Title */}
           <h1 className={styles.title}>{product.nombre}</h1>
 
-          {/* Rating */}
           <div className={styles.rating}>
             <div className={styles.stars}>
-              {'★'.repeat(Math.floor(product.rating))}
-              {'☆'.repeat(5 - Math.floor(product.rating))}
+              {'★'.repeat(Math.floor(product.rating || 0))}
+              {'☆'.repeat(5 - Math.floor(product.rating || 0))}
             </div>
             <span className={styles.ratingValue}>{product.rating}</span>
             <span className={styles.reviews}>({reviews.length} reseñas)</span>
           </div>
 
-          {/* Price */}
           <div className={styles.price}>{formatPrice(product.precio)}</div>
-
-          {/* Description */}
           <p className={styles.description}>{product.descripcion}</p>
 
-          {/* Specifications */}
           <div className={styles.specs}>
             {product.especificaciones && Array.isArray(product.especificaciones) && product.especificaciones.map((spec) => (
               <div key={spec.id} className={styles.specItem}>
@@ -217,10 +212,10 @@ export default function ProductDetail() {
             ))}
           </div>
 
-          {/* CTA Buttons */}
           <div className={styles.actions}>
-            <button className={styles.primaryButton}>Solicitar Cotización</button>
+            <button type="button" className={styles.primaryButton}>Solicitar Cotización</button>
             <button 
+              type="button"
               className={`${styles.secondaryButton} ${isFavorite ? styles.favorited : ''}`}
               onClick={toggleFavorite}
             >
@@ -235,7 +230,6 @@ export default function ProductDetail() {
         <div className={styles.reviewsContainer}>
           <h2>Reseñas y Comentarios</h2>
 
-          {/* Formulario para dejar reseña */}
           <div className={styles.reviewForm}>
             <h3>Deja tu reseña</h3>
             <form onSubmit={handleSubmitReview}>
@@ -293,7 +287,6 @@ export default function ProductDetail() {
             </form>
           </div>
 
-          {/* Lista de reseñas */}
           <div className={styles.reviewsList}>
             <h3>Comentarios ({reviews.length})</h3>
             
@@ -302,8 +295,9 @@ export default function ProductDetail() {
                 No hay reseñas aún. ¡Sé el primero en dejar una!
               </p>
             ) : (
-              reviews.map((review, index) => (
-                <div key={index} className={styles.reviewItem}>
+              // CORRECCIÓN: Uso de una key única compuesta (o un ID real si existe)
+              reviews.map((review) => (
+                <div key={review.id || `${review.nombre_cliente}-${review.fecha_resena}`} className={styles.reviewItem}>
                   <div className={styles.reviewHeader}>
                     <h4>{review.nombre_cliente}</h4>
                     <div className={styles.reviewStars}>
@@ -312,7 +306,7 @@ export default function ProductDetail() {
                     </div>
                   </div>
                   <p className={styles.reviewDate}>
-                    {new Date(review.fecha_resena).toLocaleDateString('es-ES')}
+                    {new Date(review.fecha_resena || Date.now()).toLocaleDateString('es-ES')}
                   </p>
                   <p className={styles.reviewComment}>{review.comentario}</p>
                 </div>

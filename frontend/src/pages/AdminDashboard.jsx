@@ -31,34 +31,40 @@ export default function AdminDashboard() {
 
   const verificarAutenticacion = async () => {
     try {
-    const authCheck = await fetch(`https://three60-digital.onrender.com/api/usuarios/autenticacion/check_auth/`, {
-        method: `GET`,
-        credentials: `include`
-    });
+      const authCheck = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/check_auth/`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
 
-    if (!authCheck.ok) {
-        e(`/admin/login`);
+      if (!authCheck.ok) {
+        navigate('/admin/login');
         return;
-    }
+      }
 
-    const responseMe = await fetch(`https://three60-digital.onrender.com/api/usuarios/autenticacion/me/`, {
-        method: `GET`,
-        credentials: `include`
-    });
+      const responseMe = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/usuarios/autenticacion/me/`,
+        {
+          method: 'GET',
+          credentials: 'include',
+        }
+      );
 
-    if (responseMe.status === 401) {
-        // Handle unauthorized specifically: session might have expired between requests
-        e(`/admin/login`);
+      if (responseMe.status === 401) {
+        navigate('/admin/login');
         return;
-    }
+      }
 
-    if (responseMe.ok) {
-        i(await responseMe.json());
+      if (responseMe.ok) {
+        const data = await responseMe.json();
+        setAdmin(data);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      navigate('/admin/login');
     }
-} catch (err) {
-    console.error(`Error:`, err);
-    e(`/admin/login`);
-}
   };
 
   const cargarProductos = async () => {
@@ -439,6 +445,7 @@ export default function AdminDashboard() {
                     <option value="Logos">Logos</option>
                     <option value="Pendones">Pendones</option>
                     <option value="Posters">Posters</option>
+                    <option value="Avisos Luminosos">Avisos Luminosos</option>
                   </select>
                 </div>
 

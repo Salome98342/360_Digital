@@ -65,8 +65,10 @@ export default function AdminLogin() {
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
-            <label>Usuario</label>
+            {/* CORRECCIÓN: htmlFor conectado al id del input */}
+            <label htmlFor="usuarioLogin">Usuario</label>
             <input
+              id="usuarioLogin"
               type="text"
               name="usuario"
               placeholder="Tu usuario"
@@ -77,8 +79,10 @@ export default function AdminLogin() {
           </div>
 
           <div className={styles.formGroup}>
-            <label>Contraseña</label>
+            {/* CORRECCIÓN: htmlFor conectado al id del input */}
+            <label htmlFor="contrasenaLogin">Contraseña</label>
             <input
+              id="contrasenaLogin"
               type="password"
               name="contrasena"
               placeholder="Tu contraseña"
