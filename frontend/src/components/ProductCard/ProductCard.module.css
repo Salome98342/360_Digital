@@ -62,7 +62,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.5rem;
-  font-family: var("League Spartan", sans-serif);
+  font-family: 'League Spartan', sans-serif;
   font-weight: 700;
 }
 
