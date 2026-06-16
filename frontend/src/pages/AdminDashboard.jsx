@@ -444,6 +444,8 @@ export default function AdminDashboard() {
                     <option value="Pendones">Pendones</option>
                     <option value="Posters">Posters</option>
                     <option value="Avisos Luminosos">Avisos Luminosos</option>
+                    <option value="Pendones y Estructuras">Pendones y Estructuras</option>
+                    
                   </select>
                 </div>
 

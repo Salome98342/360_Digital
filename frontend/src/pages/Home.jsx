@@ -47,8 +47,8 @@ export default function Home() {
       <Services />
 
       {/* Location & Reviews Section */}
-      <section className={styles.locationReviews}>
-        <div className={styles.locationContainer}>
+      <section className={styles.reviewsLocationSection}>
+        <div className={styles.fullWidthContainer}>
           
 {/* Map Container */}
           <div className={styles.mapSection}>

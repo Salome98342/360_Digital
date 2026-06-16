@@ -113,6 +113,16 @@ export default function ProductDetail() {
     }
   };
 
+  // Función para manejar la redirección a WhatsApp para cotizar
+  const handleCotizar = () => {
+    if (!product) return;
+    
+    const mensaje = `Hola! quiero cotizar el siguiente producto: ${product.nombre}`;
+    const urlWhatsapp = `https://api.whatsapp.com/send/?phone=573187752351&text=${encodeURIComponent(mensaje)}&type=phone_number&app_absent=0`;
+    
+    window.open(urlWhatsapp, '_blank');
+  };
+
   // Función para agregar/quitar de favoritos
   const toggleFavorite = () => {
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
@@ -213,7 +223,14 @@ export default function ProductDetail() {
           </div>
 
           <div className={styles.actions}>
-            <button type="button" className={styles.primaryButton}>Solicitar Cotización</button>
+            {/* AQUÍ ESTÁ EL BOTÓN ACTUALIZADO */}
+            <button 
+              type="button" 
+              className={styles.primaryButton}
+              onClick={handleCotizar}
+            >
+              Solicitar Cotización
+            </button>
             <button 
               type="button"
               className={`${styles.secondaryButton} ${isFavorite ? styles.favorited : ''}`}

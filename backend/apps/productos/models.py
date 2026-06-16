@@ -7,6 +7,8 @@ from django.contrib.postgres.fields import ArrayField
 import json
 
 
+
+
 class Administrador(models.Model):
     usuario = models.CharField(max_length=50, unique=True)
     correo = models.EmailField(unique=True)

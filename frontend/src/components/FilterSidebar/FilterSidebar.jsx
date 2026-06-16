@@ -24,7 +24,9 @@ export default function FilterSidebar({ onFilterChange, activeFilters }) {
     'Empaques',
     'Identidad',
     'Volantes',
-    'Posters'
+    'Posters',
+    'Avisos Luminosos',
+    'Pendones y Estructuras'
   ];
 
   const ratings = [
