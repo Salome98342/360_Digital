@@ -87,9 +87,10 @@ export default function AdminDashboard() {
   const [isEditingTarjeta, setIsEditingTarjeta] = useState(false);
   const [tarjetaForm, setTarjetaForm] = useState({
     id: '',
-    nombre: '',
+    titulo: '', // Cambiado de 'nombre' a 'titulo'
     descripcion: '',
-    activo: true
+    activa: true, // Cambiado de 'activo' a 'activa'
+    ruta_destino: ''
   });
 
   const cargarTarjetas = useCallback(async () => {
@@ -112,11 +113,12 @@ export default function AdminDashboard() {
     setSuccess('');
 
     const formDataTarjeta = new FormData();
-    formDataTarjeta.append('nombre', tarjetaForm.nombre);
+    // Actualizado con los nombres de tu nuevo modelo
+    formDataTarjeta.append('titulo', tarjetaForm.titulo);
     formDataTarjeta.append('descripcion', tarjetaForm.descripcion);
-    formDataTarjeta.append('activo', tarjetaForm.activo);
+    formDataTarjeta.append('activa', tarjetaForm.activa);
+    formDataTarjeta.append('ruta_destino', tarjetaForm.ruta_destino);
 
-    // Solo añadimos la imagen si el usuario seleccionó una nueva
     if (imagenTarjeta) {
       formDataTarjeta.append('imagen', imagenTarjeta);
     }
@@ -130,7 +132,6 @@ export default function AdminDashboard() {
     try {
       const response = await fetch(url, {
         method,
-        // No debes poner 'Content-Type' aquí cuando envías FormData.
         headers: {
           'X-CSRFToken': getCookie('csrftoken')
         },
@@ -146,7 +147,7 @@ export default function AdminDashboard() {
       setSuccess(isEditingTarjeta ? 'Tarjeta actualizada!' : 'Tarjeta creada!');
       await cargarTarjetas();
 
-      setTarjetaForm({ id: '', nombre: '', descripcion: '', activo: true });
+      setTarjetaForm({ id: '', titulo: '', descripcion: '', activa: true, ruta_destino: '' });
       setImagenTarjeta(null);
       setIsEditingTarjeta(false);
     } catch (err) {
@@ -159,16 +160,17 @@ export default function AdminDashboard() {
     setIsEditingTarjeta(true);
     setTarjetaForm({
       id: tarjeta.id,
-      nombre: tarjeta.nombre || '',
+      titulo: tarjeta.titulo || '', // Actualizado
       descripcion: tarjeta.descripcion || '',
-      activo: !!tarjeta.activo
+      activa: !!tarjeta.activa, // Actualizado
+      ruta_destino: tarjeta.ruta_destino || ''
     });
     setImagenTarjeta(null);
   };
 
   const handleCancelTarjeta = () => {
     setIsEditingTarjeta(false);
-    setTarjetaForm({ id: '', nombre: '', descripcion: '', activo: true });
+    setTarjetaForm({ id: '', titulo: '', descripcion: '', activa: true, ruta_destino: '' });
     setImagenTarjeta(null);
     setError('');
     setSuccess('');
@@ -310,7 +312,6 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id) => {
-    // 2. Uso de globalThis (S7764)
     if (!globalThis.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       return;
     }
@@ -334,7 +335,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Función ahora mucho más limpia
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -349,7 +349,6 @@ export default function AdminDashboard() {
       const requestData = {
         nombre: formData.nombre,
         descripcion: formData.descripcion,
-        // 4. Uso de Number.parseFloat (S7773)
         precio: Number.parseFloat(formData.precio),
         categoria_nombre: formData.categoria
       };
@@ -371,8 +370,6 @@ export default function AdminDashboard() {
       }
 
       const productoData = await response.json();
-
-      // Procesamos las especificaciones en la función externa para bajar complejidad
       await procesarEspecificaciones(productoData.id, deletedEspecificaciones, formData.especificaciones);
 
       setSuccess(editingId ? 'Producto actualizado exitosamente' : 'Producto creado exitosamente');
@@ -423,7 +420,6 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteImage = async (imageId) => {
-    // 2. Uso de globalThis (S7764)
     if (!globalThis.confirm('¿Estás seguro de que quieres eliminar esta imagen?')) {
       return;
     }
@@ -496,8 +492,7 @@ export default function AdminDashboard() {
           {(showForm || editingId) && (
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formGrid}>
-
-                {/* 5. Etiquetas con htmlFor apuntando a ids (S6853) */}
+                {/* Campos del Producto... */}
                 <div className={styles.formGroup}>
                   <label htmlFor="nombreProducto">Nombre</label>
                   <input
@@ -543,7 +538,6 @@ export default function AdminDashboard() {
                     <option value="Posters">Posters</option>
                     <option value="Avisos Luminosos">Avisos Luminosos</option>
                     <option value="Pendones y Estructuras">Pendones y Estructuras</option>
-
                   </select>
                 </div>
 
@@ -560,7 +554,6 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className={styles.formGroupFull}>
-                  {/* Etiqueta conectada al botón de agregar para evitar advertencia de a11y */}
                   <label htmlFor="btnAgregarEspec">Especificaciones</label>
                   <div className={styles.especificaciones}>
                     {formData.especificaciones.map((esp, index) => (
@@ -672,7 +665,6 @@ export default function AdminDashboard() {
                     <tr key={producto.id}>
                       <td>{producto.id}</td>
                       <td>{producto.nombre}</td>
-                      {/* 4. Uso de Number.parseFloat (S7773) */}
                       <td>${Number.parseFloat(producto.precio).toLocaleString('es-CO')}</td>
                       <td>{producto.categoria}</td>
                       <td>
@@ -700,11 +692,10 @@ export default function AdminDashboard() {
 
           {/* ==============================
               ADMINISTRAR TARJETAS (SERVICIOS)
-              Se inserta al final para no dañar tu CRUD de Productos.
              ============================== */}
           <div style={{ marginTop: '2.5rem' }}>
             <div className={styles.sectionHeader}>
-              <h2>Tarjetas (Servicios)</h2>
+              <h2>Tarjetas (Catálogo)</h2>
               <button
                 type="button"
                 className={styles.addBtn}
@@ -718,14 +709,14 @@ export default function AdminDashboard() {
             <form className={styles.form} onSubmit={handleTarjetaSubmit}>
               <div className={styles.formGrid}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="tarjetaNombre">Nombre</label>
+                  <label htmlFor="tarjetaTitulo">Título</label>
                   <input
-                    id="tarjetaNombre"
+                    id="tarjetaTitulo"
                     type="text"
-                    value={tarjetaForm.nombre}
-                    onChange={(e) => setTarjetaForm(prev => ({ ...prev, nombre: e.target.value }))}
+                    value={tarjetaForm.titulo}
+                    onChange={(e) => setTarjetaForm(prev => ({ ...prev, titulo: e.target.value }))}
                     required
-                    placeholder="Ej: Tarjetas"
+                    placeholder="Ej: Cuadros Personalizados"
                   />
                 </div>
 
@@ -733,12 +724,25 @@ export default function AdminDashboard() {
                   <label htmlFor="tarjetaActivo">Estado</label>
                   <select
                     id="tarjetaActivo"
-                    value={tarjetaForm.activo ? 'true' : 'false'}
-                    onChange={(e) => setTarjetaForm(prev => ({ ...prev, activo: e.target.value === 'true' }))}
+                    value={tarjetaForm.activa ? 'true' : 'false'}
+                    onChange={(e) => setTarjetaForm(prev => ({ ...prev, activa: e.target.value === 'true' }))}
                   >
                     <option value="true">Pública</option>
                     <option value="false">Oculta</option>
                   </select>
+                </div>
+
+                {/* NUEVO INPUT PARA RUTA_DESTINO */}
+                <div className={styles.formGroup}>
+                  <label htmlFor="tarjetaRuta">Ruta de Destino (URL)</label>
+                  <input
+                    id="tarjetaRuta"
+                    type="text"
+                    value={tarjetaForm.ruta_destino}
+                    onChange={(e) => setTarjetaForm(prev => ({ ...prev, ruta_destino: e.target.value }))}
+                    required
+                    placeholder="Ej: /catalogo?categoria=cuadros"
+                  />
                 </div>
 
                 <div className={styles.formGroupFull}>
@@ -780,7 +784,7 @@ export default function AdminDashboard() {
                     <tr>
                       <th>ID</th>
                       <th>Imagen</th>
-                      <th>Nombre</th>
+                      <th>Título</th>
                       <th>Estado</th>
                       <th>Acciones</th>
                     </tr>
@@ -792,13 +796,14 @@ export default function AdminDashboard() {
                         <td>
                           <img
                             src={tarjeta.imagen}
-                            alt={tarjeta.nombre}
+                            alt={tarjeta.titulo}
                             width="50"
                             style={{ borderRadius: '4px', objectFit: 'cover' }}
                           />
                         </td>
-                        <td>{tarjeta.nombre}</td>
-                        <td>{tarjeta.activo ? 'Pública' : 'Oculta'}</td>
+                        {/* Se muestra el 'titulo' y 'activa' según el nuevo modelo */}
+                        <td>{tarjeta.titulo}</td>
+                        <td>{tarjeta.activa ? 'Pública' : 'Oculta'}</td>
                         <td>
                           <button
                             type="button"
@@ -820,4 +825,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-

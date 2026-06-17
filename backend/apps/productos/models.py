@@ -41,7 +41,10 @@ class Administrador(models.Model):
 class Servicio(models.Model):
     nombre = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True, null=True)
-    imagen = models.URLField(blank=True, null=True)
+    # Debe ser ImageField para que reciba archivos desde el FormData de React
+    imagen = models.ImageField(upload_to='servicios/', null=True, blank=True)
+    # Agregamos la ruta de destino
+    ruta_destino = models.CharField(max_length=200, blank=True, null=True)
     activo = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 
@@ -163,11 +166,3 @@ class FormularioContacto(models.Model):
     def __str__(self):
         return f"{self.nombre_completo} - {self.fecha_envio.strftime('%d/%m/%Y')}"
 
-class TarjetaCatalogo(models.Model):
-    titulo = models.CharField(max_length=150)
-    descripcion = models.CharField(max_length=255, blank=True)
-    # Esto sube la imagen a una carpeta 'tarjetas' en tu bucket de Supabase
-    imagen = models.ImageField(upload_to='tarjetas/', null=True, blank=True)
-    # Aquí guardas a dónde debe llevar el click (ej: /catalogo?categoria=cuadros)
-    ruta_destino = models.CharField(max_length=200) 
-    activa = models.BooleanField(default=True)
