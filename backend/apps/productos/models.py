@@ -162,3 +162,12 @@ class FormularioContacto(models.Model):
 
     def __str__(self):
         return f"{self.nombre_completo} - {self.fecha_envio.strftime('%d/%m/%Y')}"
+
+class TarjetaCatalogo(models.Model):
+    titulo = models.CharField(max_length=150)
+    descripcion = models.CharField(max_length=255, blank=True)
+    # Esto sube la imagen a una carpeta 'tarjetas' en tu bucket de Supabase
+    imagen = models.ImageField(upload_to='tarjetas/', null=True, blank=True)
+    # Aquí guardas a dónde debe llevar el click (ej: /catalogo?categoria=cuadros)
+    ruta_destino = models.CharField(max_length=200) 
+    activa = models.BooleanField(default=True)

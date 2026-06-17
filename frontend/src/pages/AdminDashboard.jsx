@@ -65,7 +65,7 @@ export default function AdminDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [deletedEspecificaciones, setDeletedEspecificaciones] = useState([]);
-  
+
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -73,11 +73,107 @@ export default function AdminDashboard() {
     categoria: 'Tarjetas',
     especificaciones: []
   });
-  
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [galeriaImages, setGaleriaImages] = useState([]);
   const [imagenACargar, setImagenACargar] = useState(null);
+
+  // ==============================
+  // TARJETAS / SERVICIOS (Admin)
+  // ==============================
+  const [tarjetas, setTarjetas] = useState([]);
+  const [imagenTarjeta, setImagenTarjeta] = useState(null);
+  const [isEditingTarjeta, setIsEditingTarjeta] = useState(false);
+  const [tarjetaForm, setTarjetaForm] = useState({
+    id: '',
+    nombre: '',
+    descripcion: '',
+    activo: true
+  });
+
+  const cargarTarjetas = useCallback(async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/servicios/`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) return;
+      const data = await response.json();
+      setTarjetas(data.results || data);
+    } catch (err) {
+      console.error('Error al cargar tarjetas:', err);
+    }
+  }, []);
+
+  const handleTarjetaSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    const formDataTarjeta = new FormData();
+    formDataTarjeta.append('nombre', tarjetaForm.nombre);
+    formDataTarjeta.append('descripcion', tarjetaForm.descripcion);
+    formDataTarjeta.append('activo', tarjetaForm.activo);
+
+    // Solo añadimos la imagen si el usuario seleccionó una nueva
+    if (imagenTarjeta) {
+      formDataTarjeta.append('imagen', imagenTarjeta);
+    }
+
+    const url = isEditingTarjeta
+      ? `${import.meta.env.VITE_API_URL}/api/servicios/${tarjetaForm.id}/`
+      : `${import.meta.env.VITE_API_URL}/api/servicios/`;
+
+    const method = isEditingTarjeta ? 'PUT' : 'POST';
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        credentials: 'include',
+        body: formDataTarjeta
+      });
+
+      if (!response.ok) {
+        setError('Hubo un error al guardar la tarjeta.');
+        return;
+      }
+
+      setSuccess(isEditingTarjeta ? 'Tarjeta actualizada!' : 'Tarjeta creada!');
+      await cargarTarjetas();
+
+      setTarjetaForm({ id: '', nombre: '', descripcion: '', activo: true });
+      setImagenTarjeta(null);
+      setIsEditingTarjeta(false);
+    } catch (err) {
+      setError('Error: ' + err.message);
+      console.error('Error guardando tarjeta:', err);
+    }
+  };
+
+  const handleEditTarjeta = (tarjeta) => {
+    setIsEditingTarjeta(true);
+    setTarjetaForm({
+      id: tarjeta.id,
+      nombre: tarjeta.nombre || '',
+      descripcion: tarjeta.descripcion || '',
+      activo: !!tarjeta.activo
+    });
+    setImagenTarjeta(null);
+  };
+
+  const handleCancelTarjeta = () => {
+    setIsEditingTarjeta(false);
+    setTarjetaForm({ id: '', nombre: '', descripcion: '', activo: true });
+    setImagenTarjeta(null);
+    setError('');
+    setSuccess('');
+  };
+
+  // ==============================
 
   const verificarAutenticacion = useCallback(async () => {
     try {
@@ -131,7 +227,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     verificarAutenticacion();
     cargarProductos();
-  }, [verificarAutenticacion, cargarProductos]);
+    cargarTarjetas();
+  }, [verificarAutenticacion, cargarProductos, cargarTarjetas]);
 
   const handleLogout = async () => {
     try {
@@ -244,7 +341,7 @@ export default function AdminDashboard() {
 
     try {
       const method = editingId ? 'PUT' : 'POST';
-      const url = editingId 
+      const url = editingId
         ? `${import.meta.env.VITE_API_URL}/api/productos/${editingId}/`
         : `${import.meta.env.VITE_API_URL}/api/productos/`;
 
@@ -315,7 +412,7 @@ export default function AdminDashboard() {
       setGaleriaImages([...galeriaImages, nuevaImagen]);
       setImagenACargar(null);
       setSuccess('Imagen subida exitosamente');
-      
+
       const fileInput = document.getElementById('imagenUploadInput');
       if (fileInput) fileInput.value = '';
     } catch (err) {
@@ -377,7 +474,7 @@ export default function AdminDashboard() {
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2>Productos</h2>
-            <button 
+            <button
               type="button"
               className={styles.addBtn}
               onClick={() => {
@@ -398,7 +495,7 @@ export default function AdminDashboard() {
           {(showForm || editingId) && (
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formGrid}>
-                
+
                 {/* 5. Etiquetas con htmlFor apuntando a ids (S6853) */}
                 <div className={styles.formGroup}>
                   <label htmlFor="nombreProducto">Nombre</label>
@@ -445,7 +542,7 @@ export default function AdminDashboard() {
                     <option value="Posters">Posters</option>
                     <option value="Avisos Luminosos">Avisos Luminosos</option>
                     <option value="Pendones y Estructuras">Pendones y Estructuras</option>
-                    
+
                   </select>
                 </div>
 
@@ -529,8 +626,8 @@ export default function AdminDashboard() {
                       <div className={styles.galeriaGrid}>
                         {galeriaImages.map((img) => (
                           <div key={img.id} className={styles.galeriaItem}>
-                            <img 
-                              src={img.url_imagen} 
+                            <img
+                              src={img.url_imagen}
                               alt={img.descripcion || 'Imagen del producto'}
                               className={styles.galeriaImage}
                             />
@@ -599,8 +696,127 @@ export default function AdminDashboard() {
               </table>
             )}
           </div>
+
+          {/* ==============================
+              ADMINISTRAR TARJETAS (SERVICIOS)
+              Se inserta al final para no dañar tu CRUD de Productos.
+             ============================== */}
+          <div style={{ marginTop: '2.5rem' }}>
+            <div className={styles.sectionHeader}>
+              <h2>Tarjetas (Servicios)</h2>
+              <button
+                type="button"
+                className={styles.addBtn}
+                onClick={handleCancelTarjeta}
+                style={{ opacity: isEditingTarjeta ? 1 : 0.7 }}
+              >
+                {isEditingTarjeta ? 'Cancelar edición' : '+ Nueva Tarjeta'}
+              </button>
+            </div>
+
+            <form className={styles.form} onSubmit={handleTarjetaSubmit}>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="tarjetaNombre">Nombre</label>
+                  <input
+                    id="tarjetaNombre"
+                    type="text"
+                    value={tarjetaForm.nombre}
+                    onChange={(e) => setTarjetaForm(prev => ({ ...prev, nombre: e.target.value }))}
+                    required
+                    placeholder="Ej: Tarjetas"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="tarjetaActivo">Estado</label>
+                  <select
+                    id="tarjetaActivo"
+                    value={tarjetaForm.activo ? 'true' : 'false'}
+                    onChange={(e) => setTarjetaForm(prev => ({ ...prev, activo: e.target.value === 'true' }))}
+                  >
+                    <option value="true">Pública</option>
+                    <option value="false">Oculta</option>
+                  </select>
+                </div>
+
+                <div className={styles.formGroupFull}>
+                  <label htmlFor="tarjetaDescripcion">Descripción</label>
+                  <textarea
+                    id="tarjetaDescripcion"
+                    value={tarjetaForm.descripcion}
+                    onChange={(e) => setTarjetaForm(prev => ({ ...prev, descripcion: e.target.value }))}
+                    placeholder="Descripción de la tarjeta"
+                    rows="3"
+                  />
+                </div>
+
+                <div className={styles.formGroupFull}>
+                  <label htmlFor="tarjetaImagen">Imagen</label>
+                  <div className={styles.galeriaUpload}>
+                    <input
+                      id="tarjetaImagen"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setImagenTarjeta(e.target.files[0])}
+                      className={styles.fileInput}
+                      required={!isEditingTarjeta}
+                    />
+                    <button type="submit" className={styles.uploadBtn} disabled={false}>
+                      {isEditingTarjeta ? 'Actualizar' : 'Crear'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <div className={styles.productsList} style={{ marginTop: '1.5rem' }}>
+              {tarjetas.length === 0 ? (
+                <p className={styles.empty}>No hay tarjetas creadas</p>
+              ) : (
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Imagen</th>
+                      <th>Nombre</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tarjetas.map((tarjeta) => (
+                      <tr key={tarjeta.id}>
+                        <td>{tarjeta.id}</td>
+                        <td>
+                          <img
+                            src={tarjeta.imagen}
+                            alt={tarjeta.nombre}
+                            width="50"
+                            style={{ borderRadius: '4px', objectFit: 'cover' }}
+                          />
+                        </td>
+                        <td>{tarjeta.nombre}</td>
+                        <td>{tarjeta.activo ? 'Pública' : 'Oculta'}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className={styles.editBtn}
+                            onClick={() => handleEditTarjeta(tarjeta)}
+                          >
+                            Editar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
