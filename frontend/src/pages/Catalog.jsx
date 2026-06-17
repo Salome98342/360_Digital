@@ -9,7 +9,7 @@ export default function Catalog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
     categories: [],
-    price: 250000,
+
     rating: []
   });
   const [sortBy, setSortBy] = useState('relevance');
@@ -64,8 +64,7 @@ export default function Catalog() {
       results = results.filter(p => activeFilters.categories.includes(p.category));
     }
 
-    // Filtro por precio
-    results = results.filter(p => p.price <= activeFilters.price);
+    // Eliminado: Filtro por precio
 
     // Filtro por rating
     if (activeFilters.rating.length > 0) {
@@ -97,7 +96,8 @@ export default function Catalog() {
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === 'clear') {
-      setActiveFilters({ categories: [], price: 250000, rating: [] });
+      // Actualizado para no incluir el precio
+      setActiveFilters({ categories: [], rating: [] });
     } else if (filterType === 'categories') {
       setActiveFilters(prev => ({
         ...prev,
@@ -105,9 +105,6 @@ export default function Catalog() {
           ? prev.categories.filter(c => c !== value)
           : [...prev.categories, value]
       }));
-    } else if (filterType === 'price') {
-      // Uso de Number.parseInt con base 10 para cumplir con buenas prácticas
-      setActiveFilters(prev => ({ ...prev, price: Number.parseInt(value, 10) }));
     } else if (filterType === 'rating') {
       setActiveFilters(prev => ({
         ...prev,
@@ -116,6 +113,7 @@ export default function Catalog() {
           : [...prev.rating, value]
       }));
     }
+    // Eliminado: bloque else if (filterType === 'price')
   };
 
   return (
