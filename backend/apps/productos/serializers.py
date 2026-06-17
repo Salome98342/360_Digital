@@ -4,7 +4,7 @@ Serializers for productos app.
 from rest_framework import serializers
 from .models import (
     Administrador, Servicio, CategoriaProducto, Producto,
-    GaleriaProducto, Resena, FormularioContacto, Especificacion, TarjetaCatalogo
+    GaleriaProducto, Resena, FormularioContacto, Especificacion
 )
 
 
@@ -177,6 +177,7 @@ class FormularioContactoSerializer(serializers.ModelSerializer):
         fields = ['nombre_completo', 'correo', 'telefono', 'mensaje', 'contactar_por_whatsapp', 'contactar_por_correo']
 
 
+#Servicio (las tarjetas del Inicio)
 class ServicioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Servicio
