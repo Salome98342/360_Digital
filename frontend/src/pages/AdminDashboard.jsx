@@ -130,6 +130,7 @@ export default function AdminDashboard() {
     try {
       const response = await fetch(url, {
         method,
+        // No debes poner 'Content-Type' aquí cuando envías FormData.
         headers: {
           'X-CSRFToken': getCookie('csrftoken')
         },

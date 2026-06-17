@@ -21,10 +21,16 @@ from .permissions import IsAdminOrReadOnly
 from .services import enviar_email_contacto, enviar_confirmacion_contacto
 
 
-class ServicioViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet para servicios (solo lectura)"""
-    queryset = Servicio.objects.filter(activo=True)
+class ServicioViewSet(viewsets.ModelViewSet):
+    """ViewSet para servicios"""
+    # Usamos .all() para que el administrador pueda ver todas (incluso las inactivas)
+    # En el frontend ya configuramos que el público solo vea las activas.
+    queryset = Servicio.objects.all()
     serializer_class = ServicioSerializer
+    
+    # IMPORTANTE: Protegemos la ruta para que solo el Admin pueda crear/editar
+    permission_classes = [IsAdminOrReadOnly] 
+    
     pagination_class = None
 
 
