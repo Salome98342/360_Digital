@@ -1134,6 +1134,8 @@ export default function AdminDashboard() {
 
                     <option value="Avisos Luminosos">Avisos Luminosos</option>
 
+                    <option value="Cuadros Personalizados">Cuadros Personalizados</option>
+
                     <option value="Pendones y Estructuras">Pendones y Estructuras</option>
 
                   </select>
