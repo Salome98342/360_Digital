@@ -167,6 +167,15 @@ export default function ProductosView() {
                   <select name="categoria" value={formData.categoria} onChange={handleFormChange}>
                     <option value="Tarjetas">Tarjetas</option>
                     <option value="Volantes">Volantes</option>
+                    <option value="Pendones">Pendones</option>
+                    <option value="Cuadros">Cuadros</option>
+                    <option value="Identidad">Identidad</option>
+                    <option value="Cuadros Personalizados">Cuadros Personalizados</option>
+                    <option value="Posters">Posters</option>
+                    <option value="Avisos Luminosos">Avisos Luminosos</option>
+                    <option value="Pendones y Estructuras">Pendones y Estructuras</option>
+                    <option value="Otros">Otros</option>
+
                     {/* Resto de opciones... */}
                   </select>
                 </div>
