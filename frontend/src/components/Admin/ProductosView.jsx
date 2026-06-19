@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-hot-toast';
 import { getCookie } from '../../src/utils/helpers';
-import styles from './AdminDashboard.module.css';
+import styles from '../../pages/AdminDashboard.module.css';
 
 export default function ProductosView() {
   const [productos, setProductos] = useState([]);
