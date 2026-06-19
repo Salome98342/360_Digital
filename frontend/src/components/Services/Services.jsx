@@ -50,10 +50,10 @@ export default function Services() {
             <p style={{ color: '#fff', textAlign: 'center' }}>No hay categorías disponibles en este momento.</p>
           ) : (
             tarjetas.map((tarjeta) => (
-              // Por ahora enviamos a buscar por nombre, pero si luego añades 'ruta' a tu DB, cambias esto a tarjeta.ruta
+              // AHORA USA LA RUTA DE LA BASE DE DATOS (Con un fallback al catálogo por si acaso)
               <Link 
                 key={tarjeta.id} 
-                to={`/catalogo?busqueda=${encodeURIComponent(tarjeta.nombre)}`} 
+                to={tarjeta.ruta_destino || '/catalogo'} 
                 style={{ textDecoration: 'none' }}
               >
                 <div className={styles.serviceCard}>
