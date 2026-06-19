@@ -87,9 +87,9 @@ export default function AdminDashboard() {
   const [isEditingTarjeta, setIsEditingTarjeta] = useState(false);
   const [tarjetaForm, setTarjetaForm] = useState({
     id: '',
-    titulo: '', // Cambiado de 'nombre' a 'titulo'
+    titulo: '', 
     descripcion: '',
-    activa: true, // Cambiado de 'activo' a 'activa'
+    activa: true, 
     ruta_destino: ''
   });
 
@@ -113,10 +113,10 @@ export default function AdminDashboard() {
     setSuccess('');
 
     const formDataTarjeta = new FormData();
-    // Actualizado con los nombres de tu nuevo modelo
-    formDataTarjeta.append('titulo', tarjetaForm.titulo);
+    // AQUI SE CAMBIA PARA QUE HAGA MATCH CON EL MODELO EN DJANGO ('nombre' y 'activo')
+    formDataTarjeta.append('nombre', tarjetaForm.titulo);
     formDataTarjeta.append('descripcion', tarjetaForm.descripcion);
-    formDataTarjeta.append('activa', tarjetaForm.activa);
+    formDataTarjeta.append('activo', tarjetaForm.activa);
     formDataTarjeta.append('ruta_destino', tarjetaForm.ruta_destino);
 
     if (imagenTarjeta) {
@@ -140,7 +140,8 @@ export default function AdminDashboard() {
       });
 
       if (!response.ok) {
-        setError('Hubo un error al guardar la tarjeta.');
+        const errorData = await response.json().catch(() => ({}));
+        setError(`Error al guardar: ${JSON.stringify(errorData)}`);
         return;
       }
 
@@ -150,6 +151,9 @@ export default function AdminDashboard() {
       setTarjetaForm({ id: '', titulo: '', descripcion: '', activa: true, ruta_destino: '' });
       setImagenTarjeta(null);
       setIsEditingTarjeta(false);
+      
+      const fileInput = document.getElementById('tarjetaImagen');
+      if (fileInput) fileInput.value = '';
     } catch (err) {
       setError('Error: ' + err.message);
       console.error('Error guardando tarjeta:', err);
@@ -160,9 +164,9 @@ export default function AdminDashboard() {
     setIsEditingTarjeta(true);
     setTarjetaForm({
       id: tarjeta.id,
-      titulo: tarjeta.titulo || '', // Actualizado
+      titulo: tarjeta.nombre || '', // Backend devuelve 'nombre'
       descripcion: tarjeta.descripcion || '',
-      activa: !!tarjeta.activa, // Actualizado
+      activa: !!tarjeta.activo, // Backend devuelve 'activo'
       ruta_destino: tarjeta.ruta_destino || ''
     });
     setImagenTarjeta(null);
@@ -174,6 +178,31 @@ export default function AdminDashboard() {
     setImagenTarjeta(null);
     setError('');
     setSuccess('');
+  };
+
+  const handleDeleteTarjeta = async (id) => {
+    if (!globalThis.confirm('¿Estás seguro de que quieres eliminar esta tarjeta?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/servicios/${id}/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        setError('Error al eliminar la tarjeta');
+        return;
+      }
+
+      setSuccess('Tarjeta eliminada exitosamente');
+      cargarTarjetas(); 
+    } catch (err) {
+      setError('Error: ' + err.message);
+      console.error('Error al eliminar tarjeta:', err);
+    }
   };
 
   // ==============================
@@ -732,7 +761,6 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                {/* NUEVO INPUT PARA RUTA_DESTINO */}
                 <div className={styles.formGroup}>
                   <label htmlFor="tarjetaRuta">Ruta de Destino (URL)</label>
                   <input
@@ -796,14 +824,13 @@ export default function AdminDashboard() {
                         <td>
                           <img
                             src={tarjeta.imagen}
-                            alt={tarjeta.titulo}
+                            alt={tarjeta.nombre || tarjeta.titulo} // El backend devuelve 'nombre'
                             width="50"
                             style={{ borderRadius: '4px', objectFit: 'cover' }}
                           />
                         </td>
-                        {/* Se muestra el 'titulo' y 'activa' según el nuevo modelo */}
-                        <td>{tarjeta.titulo}</td>
-                        <td>{tarjeta.activa ? 'Pública' : 'Oculta'}</td>
+                        <td>{tarjeta.nombre || tarjeta.titulo}</td>
+                        <td>{tarjeta.activo || tarjeta.activa ? 'Pública' : 'Oculta'}</td>
                         <td>
                           <button
                             type="button"
@@ -811,6 +838,14 @@ export default function AdminDashboard() {
                             onClick={() => handleEditTarjeta(tarjeta)}
                           >
                             Editar
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.deleteBtn}
+                            onClick={() => handleDeleteTarjeta(tarjeta.id)}
+                            style={{ marginLeft: '10px' }}
+                          >
+                            Eliminar
                           </button>
                         </td>
                       </tr>
