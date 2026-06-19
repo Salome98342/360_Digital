@@ -1,10 +1,9 @@
-// src/components/Admin/AdminDashboard.jsx
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster, toast } from 'react-hot-toast';
-import { getCookie } from '../../utils/helpers';
-import ProductosView from './ProductosView';
-import TarjetasView from './TarjetasView';
+import { getCookie } from '../src/utils/helpers';
+import ProductosView from '../components/Admin/ProductosView';
+import TarjetasView from '../components/Admin/TarjetasView';
 import styles from './AdminDashboard.module.css';
 
 export default function AdminDashboard() {
