@@ -129,9 +129,38 @@ export default function ProductosView() {
     }
   };
 
-  // Funciones de formulario (onChange, agregarEspecificacion) omitidas por brevedad, 
-  // usa exactamente las mismas que tenías en tu código original para el formData.
-  const handleFormChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleFormChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleEspecificacionChange = (index, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      especificaciones: prev.especificaciones.map((esp, i) =>
+        i === index ? { ...esp, [field]: value } : esp
+      )
+    }));
+  };
+
+  const addEspecificacion = () => {
+    setFormData((prev) => ({
+      ...prev,
+      especificaciones: [...prev.especificaciones, { nombre: '', valor: '' }]
+    }));
+  };
+
+  const removeEspecificacion = (index) => {
+    setFormData((prev) => {
+      const esp = prev.especificaciones[index];
+      if (esp?.id) {
+        setDeletedEspecificaciones((d) => [...d, esp.id]);
+      }
+      return {
+        ...prev,
+        especificaciones: prev.especificaciones.filter((_, i) => i !== index)
+      };
+    });
+  };
 
   return (
     <div className={styles.section}>
@@ -181,11 +210,60 @@ export default function ProductosView() {
                 </div>
                 <div className={styles.formGroupFull}>
                   <label>Descripción</label>
-                  <textarea name="descripcion" value={formData.descripcion} onChange={handleFormChange} rows="3" />
+                  <textarea
+                    name="descripcion"
+                    value={formData.descripcion}
+                    onChange={handleFormChange}
+                    rows="3"
+                  />
+                </div>
+
+                <div className={styles.formGroupFull}>
+                  <label>Especificaciones</label>
+                  <div className={styles.especificaciones}>
+                    {formData.especificaciones.map((esp, index) => (
+                      <div key={esp.id || `espec-${index}`} className={styles.especRow}>
+                        <input
+                          type="text"
+                          aria-label={`Nombre de la especificación ${index + 1}`}
+                          placeholder="Ej: Tamaño"
+                          value={esp.nombre}
+                          onChange={(e) => handleEspecificacionChange(index, 'nombre', e.target.value)}
+                          className={styles.especNombre}
+                        />
+                        <input
+                          type="text"
+                          aria-label={`Valor de la especificación ${index + 1}`}
+                          placeholder="Ej: A4"
+                          value={esp.valor}
+                          onChange={(e) => handleEspecificacionChange(index, 'valor', e.target.value)}
+                          className={styles.especValor}
+                        />
+                        <button
+                          type="button"
+                          aria-label={`Eliminar especificación ${index + 1}`}
+                          onClick={() => removeEspecificacion(index)}
+                          className={styles.removeBtn}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    id="btnAgregarEspec"
+                    type="button"
+                    onClick={addEspecificacion}
+                    className={styles.addEspecBtn}
+                  >
+                    + Agregar especificación
+                  </button>
                 </div>
               </div>
               <div className={styles.modalActions}>
-                <button type="button" onClick={resetForm} className={styles.cancelBtn}>Cancelar</button>
+                <button type="button" onClick={resetForm} className={styles.cancelBtn}>
+                  Cancelar
+                </button>
                 <button type="submit" className={styles.submitBtn}>
                   {editingId ? 'Actualizar Producto' : 'Guardar Producto'}
                 </button>
