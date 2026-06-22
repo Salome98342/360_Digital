@@ -2,46 +2,37 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header/Header.jsx';
 import styles from './CatalogPaints.module.css';
-import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import ProductCard from '../components/ProductCard/ProductCard';
 
 export default function CatalogPaints() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilters, setActiveFilters] = useState({
-    categories: [],
-    rating: []
-  });
-  const [sortBy, setSortBy] = useState('relevance');
+  const [sortBy, setSortBy] = useState('newest');
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Cargar productos desde la API
+  // Cargar productos desde la API (Solo cuadros personalizados)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        // Filtramos directamente por el nombre exacto de la categoría
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/?id_categoria__nombre=Cuadros+Personalizados`);
         const data = await response.json();
         
-        // Manejo seguro por si viene paginado (data.results) o en lista directa (data)
         const productsList = data.results || data;
         
-        // Mapear datos de la API al formato esperado por el componente
         const mappedProducts = productsList.map(product => ({
           id: product.id,
           title: product.nombre,
           category: product.categoria,
           price: Number.parseFloat(product.precio),
-          rating: 4.5, // Rating por defecto, se actualiza en ProductDetail
-          // Tomamos directamente la imagen del backend. Si no hay, pasamos un string vacío.
+          rating: 5.0,
           image: product.galeria?.[0]?.url_imagen || '', 
           description: product.descripcion
         }));
         
         setAllProducts(mappedProducts);
       } catch (error) {
-        console.error('Error al cargar productos:', error);
+        console.error('Error al cargar cuadros:', error);
       } finally {
         setLoading(false);
       }
@@ -50,40 +41,24 @@ export default function CatalogPaints() {
     fetchProducts();
   }, []);
 
-  // Filtrar y buscar productos
+  // Filtrar por búsqueda y ordenar
   const filteredProducts = useMemo(() => {
     let results = allProducts;
 
-    // Búsqueda por término
+    // Búsqueda por término (nombre del cuadro)
     if (searchTerm) {
       results = results.filter(p =>
-        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchTerm.toLowerCase())
+        p.title.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Filtro por categoría (útil si luego divides los cuadros en subcategorías)
-    if (activeFilters.categories.length > 0 && !activeFilters.categories.includes('Todas')) {
-      results = results.filter(p => activeFilters.categories.includes(p.category));
-    }
-
-    // Filtro por rating
-    if (activeFilters.rating.length > 0) {
-      results = results.filter(p =>
-        activeFilters.rating.some(r => p.rating >= r)
-      );
-    }
-
-    // Ordenar (hacemos una copia con [...results] para no mutar el estado original de allProducts)
+    // Ordenar
     switch (sortBy) {
       case 'price-low':
         results = [...results].sort((a, b) => a.price - b.price);
         break;
       case 'price-high':
         results = [...results].sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        results = [...results].sort((a, b) => b.rating - a.rating);
         break;
       case 'newest':
         results = [...results].reverse();
@@ -93,27 +68,7 @@ export default function CatalogPaints() {
     }
 
     return results;
-  }, [searchTerm, activeFilters, sortBy, allProducts]);
-
-  const handleFilterChange = (filterType, value) => {
-    if (filterType === 'clear') {
-      setActiveFilters({ categories: [], rating: [] });
-    } else if (filterType === 'categories') {
-      setActiveFilters(prev => ({
-        ...prev,
-        categories: prev.categories.includes(value)
-          ? prev.categories.filter(c => c !== value)
-          : [...prev.categories, value]
-      }));
-    } else if (filterType === 'rating') {
-      setActiveFilters(prev => ({
-        ...prev,
-        rating: prev.rating.includes(value)
-          ? prev.rating.filter(r => r !== value)
-          : [...prev.rating, value]
-      }));
-    }
-  };
+  }, [searchTerm, sortBy, allProducts]);
 
   return (
     <div className={styles.catalogContainer}>
@@ -122,17 +77,17 @@ export default function CatalogPaints() {
       {/* Header del Catálogo */}
       <div className={styles.header}>
         <div className={styles.headerContent}>
-          <h1>Catálogo de Cuadros</h1>
-          <p>Explora nuestra galería de cuadros personalizados y dale vida a tus espacios</p>
+          <h1>Galería de Cuadros</h1>
+          <p>Explora nuestras obras y dale vida a tus espacios</p>
         </div>
       </div>
 
-      {/* Search y Sort */}
+      {/* Buscador y Ordenador */}
       <div className={styles.topBar}>
         <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Buscar cuadros..."
+            placeholder="Buscar cuadro..."
             className={styles.searchInput}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -147,49 +102,40 @@ export default function CatalogPaints() {
             onChange={(e) => setSortBy(e.target.value)}
             className={styles.sortSelect}
           >
-            <option value="relevance">Relevancia</option>
+            <option value="newest">Más Recientes</option>
             <option value="price-low">Menor Precio</option>
             <option value="price-high">Mayor Precio</option>
-            <option value="rating">Mejor Rating</option>
-            <option value="newest">Más Recientes</option>
           </select>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className={styles.mainContent}>
-        {/* Sidebar */}
-        <FilterSidebar 
-          onFilterChange={handleFilterChange}
-          activeFilters={activeFilters}
-        />
-
-        {/* Productos Grid */}
-        <div className={styles.productsSection}>
+      {/* Contenido Principal (Sin Sidebar, ancho completo) */}
+      {/* Nota: style={{ display: 'block' }} asegura que anulemos cualquier grid viejo del sidebar */}
+      <div className={styles.mainContent} style={{ display: 'block', padding: '20px 0' }}>
+        
+        <div className={styles.productsSection} style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
           {loading ? (
             <div className={styles.loading}>
-              <p>Cargando cuadros...</p>
+              <p>Cargando galería...</p>
             </div>
           ) : (
             <>
-              <div className={styles.resultsInfo}>
-                <span>Mostrando {filteredProducts.length} de {allProducts.length} resultados</span>
+              <div className={styles.resultsInfo} style={{ marginBottom: '20px' }}>
+                <span>Mostrando {filteredProducts.length} cuadros</span>
               </div>
 
               {filteredProducts.length > 0 ? (
                 <div className={styles.productsGrid}>
                   {filteredProducts.map(product => (
                     <Link key={product.id} to={`/producto/${product.id}`} className={styles.productCardLink}>
-                      <ProductCard 
-                        product={product}
-                      />
+                      <ProductCard product={product} />
                     </Link>
                   ))}
                 </div>
               ) : (
-                <div className={styles.noResults}>
-                  <h3>No se encontraron resultados</h3>
-                  <p>Intenta ajustar los filtros o términos de búsqueda</p>
+                <div className={styles.noResults} style={{ textAlign: 'center', padding: '50px 0' }}>
+                  <h3>No se encontraron cuadros</h3>
+                  <p>Intenta con otro término de búsqueda</p>
                 </div>
               )}
             </>
