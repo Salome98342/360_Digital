@@ -61,12 +61,19 @@ class ProductoListSerializer(serializers.ModelSerializer):
     """Serializer for product list view - supports read and write"""
     categoria = serializers.SerializerMethodField(read_only=True)
     categoria_nombre = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    # 1. Agrega esta línea para aceptar el ID directamente:
+    id_categoria = serializers.PrimaryKeyRelatedField(
+        queryset=CategoriaProducto.objects.all(), 
+        write_only=True, 
+        required=False
+    )
     especificaciones = EspecificacionSerializer(many=True, read_only=True)
     galeria = GaleriaProductoSerializer(many=True, read_only=True)
     
     class Meta:
         model = Producto
-        fields = ['id', 'nombre', 'descripcion', 'precio', 'categoria', 'especificaciones', 'galeria', 'fecha_creacion', 'categoria_nombre']
+        # 2. Agrega 'id_categoria' a la lista de fields:
+        fields = ['id', 'nombre', 'descripcion', 'precio', 'categoria', 'id_categoria', 'especificaciones', 'galeria', 'fecha_creacion', 'categoria_nombre']
         read_only_fields = ['id', 'fecha_creacion']
     
     def get_categoria(self, obj):
