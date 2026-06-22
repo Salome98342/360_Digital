@@ -6,6 +6,7 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
+import CatalogPaints from './pages/CatalogPaints'
 import './App.css'
 
 const router = createBrowserRouter([
@@ -36,7 +37,12 @@ const router = createBrowserRouter([
   {
     path: '/admin/dashboard',
     element: <AdminDashboard />
+  },
+  {
+    path: '/catalogo/CuadrosPersonalizados',
+    element: <CatalogPaints />
   }
+  
 ])
 
 function App() {

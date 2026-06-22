@@ -49,6 +49,8 @@ class ProductoViewSet(viewsets.ModelViewSet):
     search_fields = ['nombre', 'descripcion']
     ordering_fields = ['precio', 'fecha_creacion']
     ordering = ['-fecha_creacion']
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['id_categoria', 'id_categoria__nombre']
     
     def get_serializer_class(self):
         if self.action == 'retrieve':

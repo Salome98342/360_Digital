@@ -4,7 +4,7 @@ Django admin configuration for productos app.
 from django.contrib import admin
 from .models import (
     Administrador, Servicio, CategoriaProducto, Producto,
-    GaleriaProducto, Resena, FormularioContacto
+    GaleriaProducto, Resena, FormularioContacto, Especificacion
 )
 
 
@@ -36,19 +36,29 @@ class GaleriaProductoInline(admin.TabularInline):
     readonly_fields = []
 
 
+# 1. Nueva clase Inline para las Especificaciones
+class EspecificacionInline(admin.TabularInline):
+    model = Especificacion
+    extra = 1
+    fields = ['nombre', 'valor']
+
+
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
     list_display = ['nombre', 'id_categoria', 'precio', 'activo', 'fecha_creacion']
     list_filter = ['id_categoria', 'activo']
     search_fields = ['nombre']
     readonly_fields = ['fecha_creacion']
-    inlines = [GaleriaProductoInline]
+    # 2. Agregamos EspecificacionInline a los inlines
+    inlines = [GaleriaProductoInline, EspecificacionInline]
+    
     fieldsets = (
         ('Información General', {
             'fields': ('nombre', 'descripcion', 'id_categoria', 'id_admin')
         }),
-        ('Precios y Especificaciones', {
-            'fields': ('precio', 'especificaciones')
+        # 3. Quitamos 'especificaciones' de los fields (ahora se maneja por el Inline)
+        ('Precios', {
+            'fields': ('precio',)
         }),
         ('Estado', {
             'fields': ('activo', 'fecha_creacion')

@@ -5,7 +5,7 @@ import styles from './CatalogPaints.module.css';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar';
 import ProductCard from '../components/ProductCard/ProductCard';
 
-export default function Catalog() {
+export default function CatalogPaints() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
     categories: [],
