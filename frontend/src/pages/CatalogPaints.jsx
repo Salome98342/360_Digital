@@ -9,7 +9,6 @@ export default function CatalogPaints() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
     categories: [],
-
     rating: []
   });
   const [sortBy, setSortBy] = useState('relevance');
@@ -21,11 +20,15 @@ export default function CatalogPaints() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/?categoria=Cuadros%20Personalizados`);
+        // Filtramos directamente por el nombre exacto de la categoría
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/?id_categoria__nombre=Cuadros+Personalizados`);
         const data = await response.json();
         
+        // Manejo seguro por si viene paginado (data.results) o en lista directa (data)
+        const productsList = data.results || data;
+        
         // Mapear datos de la API al formato esperado por el componente
-        const mappedProducts = data.results.map(product => ({
+        const mappedProducts = productsList.map(product => ({
           id: product.id,
           title: product.nombre,
           category: product.categoria,
@@ -59,12 +62,10 @@ export default function CatalogPaints() {
       );
     }
 
-    // Filtro por categoría
+    // Filtro por categoría (útil si luego divides los cuadros en subcategorías)
     if (activeFilters.categories.length > 0 && !activeFilters.categories.includes('Todas')) {
       results = results.filter(p => activeFilters.categories.includes(p.category));
     }
-
-    // Eliminado: Filtro por precio
 
     // Filtro por rating
     if (activeFilters.rating.length > 0) {
@@ -96,7 +97,6 @@ export default function CatalogPaints() {
 
   const handleFilterChange = (filterType, value) => {
     if (filterType === 'clear') {
-      // Actualizado para no incluir el precio
       setActiveFilters({ categories: [], rating: [] });
     } else if (filterType === 'categories') {
       setActiveFilters(prev => ({
@@ -113,7 +113,6 @@ export default function CatalogPaints() {
           : [...prev.rating, value]
       }));
     }
-    // Eliminado: bloque else if (filterType === 'price')
   };
 
   return (
@@ -123,8 +122,8 @@ export default function CatalogPaints() {
       {/* Header del Catálogo */}
       <div className={styles.header}>
         <div className={styles.headerContent}>
-          <h1>Catálogo</h1>
-          <p>Explora nuestros trabajos en diseño gráfico, identidad corporativa y materiales de marketing</p>
+          <h1>Catálogo de Cuadros</h1>
+          <p>Explora nuestra galería de cuadros personalizados y dale vida a tus espacios</p>
         </div>
       </div>
 
@@ -133,7 +132,7 @@ export default function CatalogPaints() {
         <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Buscar servicios..."
+            placeholder="Buscar cuadros..."
             className={styles.searchInput}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -169,7 +168,7 @@ export default function CatalogPaints() {
         <div className={styles.productsSection}>
           {loading ? (
             <div className={styles.loading}>
-              <p>Cargando productos...</p>
+              <p>Cargando cuadros...</p>
             </div>
           ) : (
             <>
