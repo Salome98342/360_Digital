@@ -129,6 +129,65 @@ export default function ProductosView() {
     }
   };
 
+  // ==============================
+  // LOGICA DE IMÁGENES INTEGRADA
+  // ==============================
+  const handleUploadImage = async () => {
+    if (!imagenACargar || !editingId) {
+      toast.error('Selecciona una imagen primero');
+      return;
+    }
+
+    const toastId = toast.loading('Subiendo imagen...');
+    try {
+      const formDataImg = new FormData();
+      formDataImg.append('imagen', imagenACargar);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/${editingId}/upload_image/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        credentials: 'include',
+        body: formDataImg
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) throw new Error('Error al subir la imagen');
+
+      setGaleriaImages([...galeriaImages, responseData]);
+      setImagenACargar(null);
+      toast.success('Imagen subida exitosamente', { id: toastId });
+
+      const fileInput = document.getElementById('imagenUploadInput');
+      if (fileInput) fileInput.value = '';
+    } catch (err) {
+      toast.error('Error al subir imagen', { id: toastId });
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta imagen?')) return;
+
+    const toastId = toast.loading('Eliminando imagen...');
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/productos/${editingId}/delete_image/?image_id=${imageId}`,
+        {
+          method: 'DELETE',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') },
+          credentials: 'include'
+        }
+      );
+
+      if (!response.ok) throw new Error('Error al eliminar la imagen');
+
+      setGaleriaImages(galeriaImages.filter(img => img.id !== imageId));
+      toast.success('Imagen eliminada', { id: toastId });
+    } catch (err) {
+      toast.error('Error al eliminar imagen', { id: toastId });
+    }
+  };
+
   const handleFormChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -182,7 +241,7 @@ export default function ProductosView() {
             
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formGrid}>
-                {/* Campos del producto idénticos a los tuyos */}
+                
                 <div className={styles.formGroup}>
                   <label>Nombre</label>
                   <input type="text" name="nombre" value={formData.nombre} onChange={handleFormChange} required />
@@ -200,13 +259,13 @@ export default function ProductosView() {
                     <option value="Cuadros">Cuadros</option>
                     <option value="Identidad">Identidad</option>
                     <option value="Cuadros Personalizados">Cuadros Personalizados</option>
-                    <option value="Pendones">Pendones</option>
                     <option value="Posters">Posters</option>
                     <option value="Avisos Luminosos">Avisos Luminosos</option>
                     <option value="Pendones y Estructuras">Pendones y Estructuras</option>
                     <option value="Otros">Otros</option>
                   </select>
                 </div>
+                
                 <div className={styles.formGroupFull}>
                   <label>Descripción</label>
                   <textarea
@@ -258,6 +317,55 @@ export default function ProductosView() {
                     + Agregar especificación
                   </button>
                 </div>
+
+                {/* ============================== */}
+                {/* INTERFAZ DE GALERÍA INTEGRADA  */}
+                {/* ============================== */}
+                {editingId && (
+                  <div className={styles.formGroupFull}>
+                    <label htmlFor="imagenUploadInput">Galería de Imágenes</label>
+                    <div className={styles.galeriaUpload}>
+                      <input
+                        id="imagenUploadInput"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setImagenACargar(e.target.files[0])}
+                        className={styles.fileInput}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleUploadImage}
+                        className={styles.uploadBtn}
+                        disabled={!imagenACargar}
+                      >
+                        Subir imagen
+                      </button>
+                    </div>
+
+                    {galeriaImages.length > 0 && (
+                      <div className={styles.galeriaGrid}>
+                        {galeriaImages.map((img) => (
+                          <div key={img.id} className={styles.galeriaItem}>
+                            <img
+                              src={img.url_imagen}
+                              alt={img.descripcion || 'Imagen del producto'}
+                              className={styles.galeriaImage}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteImage(img.id)}
+                              className={styles.deleteImageBtn}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* ============================== */}
+
               </div>
               <div className={styles.modalActions}>
                 <button type="button" onClick={resetForm} className={styles.cancelBtn}>
