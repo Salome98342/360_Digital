@@ -25,14 +25,16 @@ export default function ProductosView() {
         const data = await response.json();
         setProductos(data.results || data);
       }
-    } catch (err) {
+    } catch (e) {
       toast.error('Error al cargar la lista de productos');
     }
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react/no-did-update-set-state
     cargarProductos();
-  }, [cargarProductos]);
+  }, []);
 
   const resetForm = () => {
     setFormData({ nombre: '', descripcion: '', precio: '', categoria: 'Tarjetas', especificaciones: [] });
@@ -70,7 +72,7 @@ export default function ProductosView() {
       
       toast.success('Producto eliminado exitosamente', { id: toastId });
       cargarProductos();
-    } catch (err) {
+    } catch {
       toast.error('Error al eliminar el producto', { id: toastId });
     }
   };
@@ -321,49 +323,55 @@ export default function ProductosView() {
                 {/* ============================== */}
                 {/* INTERFAZ DE GALERÍA INTEGRADA  */}
                 {/* ============================== */}
-                {editingId && (
-                  <div className={styles.formGroupFull}>
-                    <label htmlFor="imagenUploadInput">Galería de Imágenes</label>
-                    <div className={styles.galeriaUpload}>
-                      <input
-                        id="imagenUploadInput"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => setImagenACargar(e.target.files[0])}
-                        className={styles.fileInput}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleUploadImage}
-                        className={styles.uploadBtn}
-                        disabled={!imagenACargar}
-                      >
-                        Subir imagen
-                      </button>
-                    </div>
-
-                    {galeriaImages.length > 0 && (
-                      <div className={styles.galeriaGrid}>
-                        {galeriaImages.map((img) => (
-                          <div key={img.id} className={styles.galeriaItem}>
-                            <img
-                              src={img.url_imagen}
-                              alt={img.descripcion || 'Imagen del producto'}
-                              className={styles.galeriaImage}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteImage(img.id)}
-                              className={styles.deleteImageBtn}
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                <div className={styles.formGroupFull}>
+                  <label htmlFor="imagenUploadInput">Galería de Imágenes</label>
+                  <div className={styles.galeriaUpload}>
+                    <input
+                      id="imagenUploadInput"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setImagenACargar(e.target.files[0])}
+                      className={styles.fileInput}
+                      disabled={!editingId}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleUploadImage}
+                      className={styles.uploadBtn}
+                      disabled={!imagenACargar || !editingId}
+                    >
+                      Subir imagen
+                    </button>
                   </div>
-                )}
+
+                  {!editingId && (
+                    <p style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
+                      Para subir imágenes debes primero guardar el producto.
+                    </p>
+                  )}
+
+                  {galeriaImages.length > 0 && (
+                    <div className={styles.galeriaGrid}>
+                      {galeriaImages.map((img) => (
+                        <div key={img.id} className={styles.galeriaItem}>
+                          <img
+                            src={img.url_imagen}
+                            alt={img.descripcion || 'Imagen del producto'}
+                            className={styles.galeriaImage}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteImage(img.id)}
+                            className={styles.deleteImageBtn}
+                            disabled={!editingId}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 {/* ============================== */}
 
               </div>
