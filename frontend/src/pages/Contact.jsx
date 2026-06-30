@@ -78,7 +78,7 @@ export default function Contact() {
               <div className={styles.icon}>✉</div>
               <div>
                 <h4>Correo</h4>
-                <p>info@360digital.com</p>
+                <p>publicidad360caicedonia@gmail.com</p>
               </div>
             </div>
 
@@ -86,7 +86,7 @@ export default function Contact() {
               <div className={styles.icon}>📞</div>
               <div>
                 <h4>Teléfono</h4>
-                <p>+123-456-789</p>
+                <p>+57 318 775 2351</p>
               </div>
             </div>
 
@@ -94,7 +94,7 @@ export default function Contact() {
               <div className={styles.icon}>📍</div>
               <div>
                 <h4>Ubicación</h4>
-                <p>Calle Principal 123, Ciudad, País</p>
+                <p>Cra 12 # 12-08 Piso 2 Caicedonia, Valle</p>
               </div>
             </div>
 
@@ -103,7 +103,7 @@ export default function Contact() {
               <div>
                 <h4>Horario</h4>
                 <p>Lunes a Viernes: 9:00 AM - 6:00 PM</p>
-                <p>Sábado: 10:00 AM - 2:00 PM</p>
+                <p>Sábado: 9:00 AM - 2:00 PM</p>
               </div>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function Contact() {
           {/* Invitation Text */}
           <div className={styles.invitation}>
             <h3>Cuéntanos tu proyecto</h3>
-            <p>¿Tienes un proyecto en mente? Nos encantaría conocer tu idea y ayudarte a hacerla realidad. ¡Conéctate con nosotros hoy!</p>
+            <p>¿Tienes un proyecto en mente? <br> </br>Nos encantaría conocer tu idea y ayudarte a hacerla realidad. ¡Conéctate con nosotros hoy!</p>
           </div>
         </div>
 
