@@ -111,7 +111,7 @@ export default function Contact() {
           {/* Invitation Text */}
           <div className={styles.invitation}>
             <h3>Cuéntanos tu proyecto</h3>
-            <p>¿Tienes un proyecto en mente? <br> </br>Nos encantaría conocer tu idea y ayudarte a hacerla realidad. ¡Conéctate con nosotros hoy!</p>
+            <p>¿Tienes un proyecto en mente? Nos encantaría conocer tu idea y ayudarte a hacerla realidad. ¡Conéctate con nosotros hoy!</p>
           </div>
         </div>
 
