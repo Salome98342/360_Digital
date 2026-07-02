@@ -8,17 +8,17 @@ export default function Carousel() {
   const slides = [
     {
       id: 1,
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop',
+      image: 'https://fvyjyfyzssgzbeztnpnn.supabase.co/storage/v1/object/public/Images/servicios/PAGINAS_WEB.jpg',
       alt: 'Proyecto 1',
     },
     {
       id: 2,
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop',
+      image: 'https://fvyjyfyzssgzbeztnpnn.supabase.co/storage/v1/object/public/Images/servicios/1.png',
       alt: 'Proyecto 2',
     },
     {
       id: 3,
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop',
+      image: 'https://fvyjyfyzssgzbeztnpnn.supabase.co/storage/v1/object/public/Images/images/16.jpg',
       alt: 'Proyecto 3',
     },
     {
