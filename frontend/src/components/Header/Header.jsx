@@ -18,6 +18,10 @@ export default function Header() {
     return location.pathname === path
   }
 
+  const handleWhatsAppClick = () => {
+    window.open('https://wa.me/573173562745', '_blank')
+  }
+
   return (
     <header className={styles.header}>
       <div className={styles.container}>
@@ -57,7 +61,12 @@ export default function Header() {
         </nav>
 
         {/* CTA Button */}
-        <button className={styles.ctaButton}>Cotizar</button>
+        <button 
+          className={styles.ctaButton}
+          onClick={handleWhatsAppClick}
+        >
+          Cotizar
+        </button>
       </div>
     </header>
   )
