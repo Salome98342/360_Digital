@@ -30,7 +30,7 @@ export default function Contact() {
     setError(false);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/contacto/`), {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/contacto/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -219,7 +219,7 @@ export default function Contact() {
               </button>
 
               <p className={styles.disclaimer}>
-                Se compartiran datos como tu nomrbre y correo electrónico con el equipo de 360 Digital para responder a tu consulta. No compartiremos tu información con terceros sin tu consentimiento.
+                Se compartirán datos como tu nombre y correo electrónico con el equipo de 360 Digital para responder a tu consulta. No compartiremos tu información con terceros sin tu consentimiento.
               </p>
             </form>
           </div>
