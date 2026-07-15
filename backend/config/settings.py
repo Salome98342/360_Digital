@@ -251,7 +251,7 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_SAMESITE = 'None'
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://mws66hqc-5173.use2.devtunnels.ms',
+    'https://360-digital.vercel.app',
 ]
 
 # Override por variables de entorno para producción
