@@ -1,6 +1,8 @@
 """
 Views for productos app.
 """
+import threading
+from .services import enviar_email_contacto, enviar_confirmacion_contacto
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -148,16 +150,16 @@ class FormularioContactoViewSet(viewsets.ModelViewSet):
     pagination_class = None
     
     def create(self, request, *args, **kwargs):
-        """Crear nuevo mensaje de contacto y enviar emails"""
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             contacto = serializer.save()
             
-            # Enviar email al equipo
-            enviar_email_contacto(contacto)
-            
-            # Enviar email de confirmación al cliente
-            enviar_confirmacion_contacto(contacto)
+            # Ejecutar en un hilo separado para no bloquear la respuesta HTTP
+            thread = threading.Thread(
+                target=self.enviar_correos_background, 
+                args=(contacto,)
+            )
+            thread.start()
             
             return Response(
                 {'detail': 'Mensaje recibido correctamente'},
@@ -165,6 +167,13 @@ class FormularioContactoViewSet(viewsets.ModelViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def enviar_correos_background(self, contacto):
+        # Esta función corre en segundo plano
+        try:
+            enviar_email_contacto(contacto)
+            enviar_confirmacion_contacto(contacto)
+        except Exception as e:
+            print(f"Error enviando correos: {e}")
 
 class EspecificacionViewSet(viewsets.ModelViewSet):
     """ViewSet para especificaciones de productos"""
