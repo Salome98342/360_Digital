@@ -426,7 +426,7 @@ Marketing y Desarrollo Digital
             subject,
             message,
             settings.DEFAULT_FROM_EMAIL,
-            [contacto.correo],
+            [settings.EMAIL_HOST_USER],
             fail_silently=False,
             html_message=html_message,
         )
