@@ -21,7 +21,7 @@ export default function Catalog() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/productos/`);
+      const response = await fetch('https://three60-digital.onrender.com/api/contacto/', {
         const data = await response.json();
         
         // Mapear datos de la API al formato esperado por el componente
